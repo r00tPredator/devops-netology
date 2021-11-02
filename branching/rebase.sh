@@ -3,7 +3,9 @@
 
 count=1
 for param in "$@"; do
-    echo "Next parameter: $param"
+
+    echo "\$@ Parameter #$count = $param"
+ ef6f50e (rebase: echo)
     count=$(( $count + 1 ))
 done
 
