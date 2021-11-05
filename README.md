@@ -21,7 +21,7 @@ Date:   Thu Jun 18 10:29:58 2020 -0400
     Update CHANGELOG.md
 
 
-# 2.	Первый способ через сайт: https://github.com/<owner>/<project>/commit/<hash>
+# 2.	Первый способ через сайт: "https://github.com/<owner>/<project>/commit/<hash>]
 
 https://github.com/hashicorp/terraform/commit/85024d3
 tag v0.12.23 
