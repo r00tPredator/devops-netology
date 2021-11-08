@@ -101,15 +101,11 @@ Date:   Tue Apr 21 16:28:59 2020 -0700
 
 
 
-# 6.	Команда git log -S
+# 6.	Команда git log -L
 
-C помощью опции -S попросить Git показывать только те коммиты, в которых была добавлена или удалена эта строка.
-
-$ git log -S globalPluginDirs --oneline
-35a058fb3 main: configure credentials from the CLI config file
-c0b176109 prevent log output during init
-8364383c3 Push plugin discovery down into command package
-
+C помощью опции -L попросить Git показывать только те коммиты, в которых была добавлена или удалена эта строка.
+git grep "globalPluginDirs"
+git log -L :globalPluginDirs:plugins.go
 
 
 # 7.	Автор synchronizedWriters  - Martin Atkins, кто создал функцию и James Bardin вносил изменение.
