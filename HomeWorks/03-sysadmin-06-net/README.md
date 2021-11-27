@@ -24,7 +24,7 @@ HTTP/1.1 301 Moved Permanently
 приложите скриншот консоли браузера в ответ.
 
 Ответ:
-Status Code: 200
+Status Code: 200 <br />
 Дольше всего запускается java script beacon.js за 2.86 секунд https://sb.scorecardresearch.com/cs/17440561/beacon.js  
 ![image](https://user-images.githubusercontent.com/35838789/143567112-843a5680-6e79-4081-83d7-844c96d337e9.png)
 
