@@ -1,45 +1,197 @@
 # Домашнее задание к занятию "3.9. Элементы безопасности информационных систем"
 
-1. Установите [Hashicorp Vault](https://learn.hashicorp.com/vault) в виртуальной машине Vagrant/VirtualBox. Это не является обязательным для выполнения задания, но для лучшего понимания что происходит при выполнении команд (посмотреть результат в UI), можно по аналогии с netdata из прошлых лекций пробросить порт Vault на localhost:
+1. Установите Bitwarden плагин для браузера. Зарегестрируйтесь и сохраните несколько паролей.<br />
+Ответ:<br />
+![3 9_Biwarden](https://user-images.githubusercontent.com/35838789/145347158-a62b2a39-1679-4aa3-9326-159421272b09.JPG)
 
-    ```bash
-    config.vm.network "forwarded_port", guest: 8200, host: 8200
-    ```
+2. Установите Google authenticator на мобильный телефон. Настройте вход в Bitwarden акаунт через Google authenticator OTP.<br />
+Ответ:
+![3 9_GoogleMFA](https://user-images.githubusercontent.com/35838789/145347922-d25d4754-fd2b-4aac-80d8-43ce093d700e.JPG)
 
-    Однако, обратите внимание, что только-лишь проброса порта не будет достаточно – по-умолчанию Vault слушает на 127.0.0.1; добавьте к опциям запуска `-dev-listen-address="0.0.0.0:8200"`.
-1. Запустить Vault-сервер в dev-режиме (дополнив ключ `-dev` упомянутым выше `-dev-listen-address`, если хотите увидеть UI).
-1. Используя [PKI Secrets Engine](https://www.vaultproject.io/docs/secrets/pki), создайте Root CA и Intermediate CA.
-Обратите внимание на [дополнительные материалы](https://learn.hashicorp.com/tutorials/vault/pki-engine) по созданию CA в Vault, если с изначальной инструкцией возникнут сложности.
-1. Согласно этой же инструкции, подпишите Intermediate CA csr на сертификат для тестового домена (например, `netology.example.com` если действовали согласно инструкции).
-1. Поднимите на localhost nginx, сконфигурируйте default vhost для использования подписанного Vault Intermediate CA сертификата и выбранного вами домена. Сертификат из Vault подложить в nginx руками.
-1. Модифицировав `/etc/hosts` и [системный trust-store](http://manpages.ubuntu.com/manpages/focal/en/man8/update-ca-certificates.8.html), добейтесь безошибочной с точки зрения HTTPS работы curl на ваш тестовый домен (отдающийся с localhost). Рекомендуется добавлять в доверенные сертификаты Intermediate CA. Root CA добавить было бы правильнее, но тогда при конфигурации nginx потребуется включить в цепочку Intermediate, что выходит за рамки лекции. Так же, пожалуйста, не добавляйте в доверенные сам сертификат хоста.
-1. [Ознакомьтесь](https://letsencrypt.org/ru/docs/client-options/) с протоколом ACME и CA Let's encrypt. Если у вас есть во владении доменное имя с платным TLS-сертификатом, который возможно заменить на LE, или же без HTTPS вообще, попробуйте воспользоваться одним из предложенных клиентов, чтобы сделать веб-сайт безопасным (или перестать платить за коммерческий сертификат).
+3. Установите apache2, сгенерируйте самоподписанный сертификат, настройте тестовый сайт для работы по HTTPS.<br />
+Ответ:
+````
+#Устанавливаем apache2
+sudo apt-get update
+sudo apt install apache2
 
-**Дополнительное задание вне зачета.** Вместо ручного подкладывания сертификата в nginx, воспользуйтесь [consul-template](https://medium.com/hashicorp-engineering/pki-as-a-service-with-hashicorp-vault-a8d075ece9a) для автоматического подтягивания сертификата из Vault.
- 
- ---
+# включаем mod_ssl с помощью команды a2enmod:
+sudo a2enmod ssl #включаем mod_ssl
 
-## Как сдавать задания
+# Перезапуcкаем Apache, чтобы активировать модуль:
+sudo systemctl restart apache2
 
-Обязательными к выполнению являются задачи без указания звездочки. Их выполнение необходимо для получения зачета и диплома о профессиональной переподготовке.
+# Мы можем создать файлы ключей и сертификатов SSL с помощью команды openssl:
+# «\» само по себе в конце строки является средством объединения строк вместе.
+sudo openssl req -x509 -nodes -days 36500 -newkey rsa:2048 \
+-keyout /etc/ssl/private/apache-selfsigned.key \
+-out /etc/ssl/certs/apache-selfsigned.crt \
+-subj "/C=RU/ST=Russia/L=Sakhalin/O=NetologyHW/OU=Org/CN=www.netologyHW.ru"
 
-Задачи со звездочкой (*) являются дополнительными задачами и/или задачами повышенной сложности. Они не являются обязательными к выполнению, но помогут вам глубже понять тему.
+# генерировать конфиг файл можно на сайте https://ssl-config.mozilla.org
+sudo nano /etc/apache2/sites-available/web1.conf
+<VirtualHost *:443>
+ ServerName web1
+ DocumentRoot /var/www/web1
+ SSLEngine on
+ SSLCertificateFile /etc/ssl/certs/apache-selfsigned.crt
+ SSLCertificateKeyFile /etc/ssl/private/apache-selfsigned.key
+</VirtualHost>
+sudo mkdir /var/www/web1
+sudo nano /var/www/web1/index.html #создаем, что будет отображатся на странице.
+<h1>My site on Apache2 working! By Dmitry Zakharov</h1>
+#Затем нам нужно включить файл конфигурации с помощью инструмента a2ensite:
+sudo a2ensite web1.conf 
+#проверяем. Если Syntex:OK. Значит все впорядке
+sudo apache2ctl configtest  
+sudo systemctl reload apache2
 
-Домашнее задание выполните в файле readme.md в github репозитории. В личном кабинете отправьте на проверку ссылку на .md-файл в вашем репозитории.
+# гайд https://www.digitalocean.com/community/tutorials/how-to-create-a-self-signed-ssl-certificate-for-apache-in-ubuntu-20-04
+````
 
-Также вы можете выполнить задание в [Google Docs](https://docs.google.com/document/u/0/?tgif=d) и отправить в личном кабинете на проверку ссылку на ваш документ.
-Название файла Google Docs должно содержать номер лекции и фамилию студента. Пример названия: "1.1. Введение в DevOps — Сусанна Алиева".
+4. Проверьте на TLS уязвимости произвольный сайт в интернете.<br />
+Ответ:
+````
+git clone --depth 1 https://github.com/drwetter/testssl.sh.git
+cd testssl.sh
+# быстрый тест
+./testssl.sh -e --fast --parallel https://https://netology.ru/
+# проверить сайт на уязвимости
+./testssl.sh -U --sneaky https://netology.ru/
+Testing vulnerabilities 
 
-Если необходимо прикрепить дополнительные ссылки, просто добавьте их в свой Google Docs.
+ Heartbleed (CVE-2014-0160)                not vulnerable (OK), no heartbeat extension
+ CCS (CVE-2014-0224)                       not vulnerable (OK)
+ Ticketbleed (CVE-2016-9244), experiment.  not vulnerable (OK), no session tickets
+ ROBOT                                     not vulnerable (OK)
+ Secure Renegotiation (RFC 5746)           OpenSSL handshake didn't succeed
+ Secure Client-Initiated Renegotiation     not vulnerable (OK)
+ CRIME, TLS (CVE-2012-4929)                not vulnerable (OK)
+ BREACH (CVE-2013-3587)                    no gzip/deflate/compress/br HTTP compression (OK)  - only supplied "/" tested
+````
+![3 9_testssl](https://user-images.githubusercontent.com/35838789/145347872-83181f15-ff57-4c1c-80e2-7dde989a47af.JPG)
 
-Перед тем как выслать ссылку, убедитесь, что ее содержимое не является приватным (открыто на комментирование всем, у кого есть ссылка), иначе преподаватель не сможет проверить работу. Чтобы это проверить, откройте ссылку в браузере в режиме инкогнито.
+5. Установите на Ubuntu ssh сервер, сгенерируйте новый приватный ключ. Скопируйте свой публичный ключ на другой сервер. Подключитесь к серверу по SSH-ключу.<br />
+Ответ:
+````
+# установка sshd сервера
+sudo apt install openssh-server
+sudo ufw allow ssh
+systemctl start sshd.service
+systemctl enable sshd.service
 
-[Как предоставить доступ к файлам и папкам на Google Диске](https://support.google.com/docs/answer/2494822?hl=ru&co=GENIE.Platform%3DDesktop)
+# генерим ключи, /home/<username>/.ssh/id_rsa - приватный ключ
+# id_rsa.pub - публичный ключ
+ssh-keygen
+uboo@web1:~$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/uboo/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/uboo/.ssh/id_rsa
+Your public key has been saved in /home/uboo/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:######################## uboo@web1
 
-[Как запустить chrome в режиме инкогнито ](https://support.google.com/chrome/answer/95464?co=GENIE.Platform%3DDesktop&hl=ru)
 
-[Как запустить  Safari в режиме инкогнито ](https://support.apple.com/ru-ru/guide/safari/ibrw1069/mac)
+# копируем публичный ключ на удаленный сервер
+ssh-copy-id my_user@192.168.1.102
 
-Любые вопросы по решению задач задавайте в чате Slack.
+# или копируем вручную в файл authorized_keys
+echo public_key_string >> ~/.ssh/authorized_keys
 
----
+# подключаемся по стандартному ключу
+ssh uboo@192.168.1.102
+
+# или подключаемся по нестандартному ключу
+ssh -i ~/.ssh/web1.key uboo@192.168.1.102
+
+# проверка SSH шифров
+sudo apt install -y ssh-audit
+
+ssh-audit localhost
+uboo@web2:~$ ssh-audit localhost
+# general
+(gen) banner: SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.3
+(gen) software: OpenSSH 8.2p1
+(gen) compatibility: OpenSSH 7.3+, Dropbear SSH 2016.73+
+(gen) compression: enabled (zlib@openssh.com)
+````
+Screen. Подключение к удаленному серверу.
+![3 9_ssh2](https://user-images.githubusercontent.com/35838789/145347512-ef3b0ce7-df0e-44bc-ad5c-e7fd9f071062.JPG)
+
+
+6. Переименуйте файлы ключей из задания 5. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный сервер осуществлялся по имени сервера.<br />
+Ответ:<br />
+![3 9_ssh_mv](https://user-images.githubusercontent.com/35838789/145347771-cfcc8a9b-150e-4d7f-99eb-c39b028d453c.JPG)
+
+````
+# переименоуваем
+uboo@web1:~/.ssh$ ls
+id_rsa  id_rsa.pub  known_hosts
+uboo@web1:~/.ssh$ mv -i id_rsa web1
+uboo@web1:~/.ssh$ mv -i id_rsa.pub web1.pub
+uboo@web1:~/.ssh$ ls
+known_hosts  web1  web1.pub
+
+# mkdir -p или --parents. Создать все директории, которые указаны внутри пути. Если какая-либо директория существует, то предупреждение об этом не выводится.
+# chmod 700(-rwx------) команда для изменения прав доступа к файлам и каталогам. Только владелец файла, может читать/записывать и запускать на исполнение.
+# chmod 600(-rw-------)	только владелец файла может читать/записывать
+# «&&» используется для объединения команд таким образом, что следующая команда запускается тогда и только тогда, когда предыдущая команда завершилась без ошибок (или, точнее, выйдет с кодом возврата 0)
+
+mkdir -p ~/.ssh && chmod 700 ~/.ssh
+touch ~/.ssh/config && chmod 600 ~/.ssh/config  #создаем директорию config
+nano ~/.ssh/config    #редактируем файл
+------------прописываем внутри файла:
+Host web2  #имя второго хоста
+ HostName 192.168.1.102 #IP второго хоста
+ IdentityFile ~/.ssh/web1.pub
+ User Uboo
+-------------------
+#Где: Host — это alias (псевдоним) для нашего SSH-соединения, HostName — IP адрес VPS (или имя хоста, если включен DNS), Port — номер порта, User — имя пользователя.
+
+#Если хотим автоматическое принятие ключа для новых хостов, ставим строчку снизу
+#StrictHostKeyChecking no  
+````
+
+7. Соберите дамп трафика утилитой tcpdump в формате pcap, 100 пакетов. Откройте файл pcap в Wireshark.<br />
+Ответ:
+````
+sudo tcpdump -c 100 -w 100.pcap -i enp0s8
+tcpdump: listening on enp0s8, link-type EN10MB (Ethernet), capture size 262144 bytes
+100 packets captured
+125 packets received by filter
+0 packets dropped by kernel
+
+sudo apt install wireshark
+sudo wireshark
+````
+Открываем <br />
+![3 9_wireshark](https://user-images.githubusercontent.com/35838789/145347415-22d3737d-7fef-4231-b9df-528d4fd389fd.JPG)
+
+````
+# Описание команд:
+
+apt install tcpdump
+# Дамп интерфейса
+tcpdump -i eth0
+
+# список доступных интерфейсов
+tcpdump -D
+
+# Дамп с кол-во пакетов 100
+tcpdump -c 100 -i enp0s8
+
+# запись в файл
+tcpdump -w 0001.pcap -i enp0s8
+
+# чтение из файла
+tcpdump -r 100.pcap
+
+# фильтр только TCP port 22
+tcpdump -i eth0 port 22
+
+# фильтр Source или Destination IP адрес
+tcpdump -i eth0 src 192.168.1.1
+tcpdump -i eth0 dst 192.168.1.1
+````
