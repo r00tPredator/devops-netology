@@ -9,7 +9,8 @@
 ![3 9_GoogleMFA](https://user-images.githubusercontent.com/35838789/145347922-d25d4754-fd2b-4aac-80d8-43ce093d700e.JPG)
 
 3. Установите apache2, сгенерируйте самоподписанный сертификат, настройте тестовый сайт для работы по HTTPS.<br />
-Ответ:
+Ответ:<br />
+![3 9_web1](https://user-images.githubusercontent.com/35838789/145350724-bf20c455-47ab-4fac-8375-40e500ba2dfa.JPG)
 ````
 #Устанавливаем apache2
 sudo apt-get update
