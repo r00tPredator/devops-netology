@@ -37,7 +37,8 @@ The database of these “magic patterns” is usually located in a binary file i
  ```  
 ### 3. Предположим, приложение пишет лог в текстовый файл. Этот файл оказался удален (deleted в lsof), однако возможности сигналом сказать приложению переоткрыть файлы или просто перезапустить приложение – нет. Так как приложение продолжает писать в удаленный файл, место на диске постепенно заканчивается. Основываясь на знаниях о перенаправлении потоков предложите способ обнуления открытого удаленного файла (чтобы освободить место на файловой системе).
 
-Ответ:
+Ответ:<br />
+ ![image](https://user-images.githubusercontent.com/35838789/142710588-5fdcca9d-cf33-490c-8431-d3230cc52c51.png)
 ```
 Нашел с помощью команды все удаленные файлы
 uboo@uboo-VirtualBox:~$  lsof -nP | grep '(deleted)'
@@ -46,7 +47,6 @@ uboo@uboo-VirtualBox:~$  lsof -nP | grep '(deleted)'
 gnome-she 1331 uboo   31r      REG                8,5    32768    417 /home/uboo/.local/share/gvfs-metadata/root-d02ebdf2.log (deleted)
 Где 1331 номер PID 
 31 – номер дескриптора
- ![image](https://user-images.githubusercontent.com/35838789/142710588-5fdcca9d-cf33-490c-8431-d3230cc52c51.png)
 
 С помощью команды /proc/<PID>/fd/*дескриптор*  записал его в /tmp/ и назвал root.log
 uboo@uboo-VirtualBox:~$ cat /proc/1331/fd/31 > /tmp/root.log
