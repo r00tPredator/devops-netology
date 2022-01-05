@@ -7,7 +7,9 @@
     * удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
 Ответ: 
- ```
+ 
+ ![142823643-dd98eb39-de62-42c7-a187-dec5c1301e13](https://user-images.githubusercontent.com/35838789/148174788-51931d91-e298-4e50-8743-880d45c9f132.png)
+```
 создаём юнит файл systemd для запуска: 
 sudo systemctl edit --full --force node_exporter.service
 uboo@uboo-VirtualBox:~$ cat /etc/systemd/system/node_exporter.service
@@ -179,13 +181,13 @@ fork
 При отсутствии лимита на число процессов машина быстро исчерпывает физическую память и уходит в swap(раздел подкачки, может быть как и файлом, так и разделом жесткого диска)
 ```
 :(){ :|:& };:
+```
 Fork был отклонён /user.slice/user-1000.slice/session-1.scope
- 
 ![image](https://user-images.githubusercontent.com/35838789/142823901-549e26d8-8720-4c7e-8059-8a422712a21c.png)
 
 Максимальное количество процессов PIDs одновременно 5014
  ![image](https://user-images.githubusercontent.com/35838789/142823908-761fbd31-bef5-4d29-8364-651791ca1afd.png)
-```
+
 
 Что бы поменять на большее количество, пришлось перейти на привилегированный режим sudo и записать с помощью echo и перенаправить > в файл pids.max.
 ```
