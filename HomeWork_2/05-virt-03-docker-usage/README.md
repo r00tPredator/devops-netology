@@ -46,16 +46,17 @@ Step 1/2 : FROM nginx
 Step 2/2 : COPY index.html /usr/share/nginx/html/index.html
  ---> c3adeb44efd6
 Successfully built eb172dbebdb7
-Successfully tagged r00tpredator/nginx:1.18
+Successfully tagged r00tpredator/nginx:1.18.2
 
 #Проверяем создался ли образ
 sudo docker images
 REPOSITORY                 TAG               IMAGE ID       CREATED             SIZE
-r00tpredator/nginx         1.18            eb172dbebdb7   26 seconds ago      141MB
+r00tpredator/nginx         1.18.2           eb172dbebdb7   26 seconds ago      141MB
 docker login
-docker push r00tpredator/nginx:1.18 
+docker push r00tpredator/nginx:1.18.2
 ```
 https://hub.docker.com/repository/docker/r00tpredator/nginx
+https://hub.docker.com/layers/189045762/r00tpredator/nginx/1.18.2/images/sha256-4fd29084e77708e7a0b2b1af867aa8ada9e0b3f5e16e2d3fbbd73b6f1e40c240?context=repo
 
 ## Задача 2
 
