@@ -10,9 +10,15 @@
 Домашнее задание выполните в файле readme.md в github репозитории. В личном кабинете отправьте на проверку ссылку на .md-файл в вашем репозитории.
 
 Любые вопросы по решению задач задавайте в чате учебной группы.
+<<<<<<< HEAD
 
 ---
 
+=======
+
+---
+
+>>>>>>> 0e00ff2a36a429912471d70d4d8b4bfb5ffd85d2
 ## Задача 1
 
 Сценарий выполения задачи:
@@ -35,10 +41,18 @@ Hey, Netology
 Опубликуйте созданный форк в своем репозитории и предоставьте ответ в виде ссылки на https://hub.docker.com/username_repo.
 
 Ответ:
+<<<<<<< HEAD
 docker pull nginx
 ```
 #создаем свой обораз из Dockerfile
 sudo docker build -t r00tpredator/nginx:1.18.1 .
+=======
+```
+docker pull nginx:1.18
+
+#создаем свой обораз из Dockerfile
+sudo docker build -t r00tpredator/nginx:1.18 .
+>>>>>>> 0e00ff2a36a429912471d70d4d8b4bfb5ffd85d2
 Sending build context to Docker daemon  4.096kB
 Step 1/2 : FROM nginx
  ---> 605c77e624dd
@@ -50,6 +64,7 @@ Successfully tagged r00tpredator/nginx:1.18.2
 #Проверяем создался ли образ
 sudo docker images
 REPOSITORY                 TAG               IMAGE ID       CREATED             SIZE
+<<<<<<< HEAD
 r00tpredator/nginx         1.18.2            eb172dbebdb7   26 seconds ago      141MB
 
 #Запускаем контейнер из образа. Присваеваем ему имя nginx_netology2
@@ -77,6 +92,14 @@ Hey, Netology
 <h1>I'm DevOps Engineer!</h1>
 </body>
 
+=======
+r00tpredator/nginx         1.18.2           eb172dbebdb7   26 seconds ago      141MB
+docker login
+docker push r00tpredator/nginx:1.18.2
+```
+https://hub.docker.com/repository/docker/r00tpredator/nginx
+https://hub.docker.com/layers/189045762/r00tpredator/nginx/1.18.2/images/sha256-4fd29084e77708e7a0b2b1af867aa8ada9e0b3f5e16e2d3fbbd73b6f1e40c240?context=repo
+>>>>>>> 0e00ff2a36a429912471d70d4d8b4bfb5ffd85d2
 
 ## Задача 2
 
