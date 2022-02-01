@@ -27,6 +27,7 @@
 <head>
 Hey, Netology
 </head>
+<meta charset="utf-8">
 <body>
 <h1>I’m DevOps Engineer!</h1>
 </body>
