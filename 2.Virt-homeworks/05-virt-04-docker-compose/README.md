@@ -1,4 +1,7 @@
-# Домашнее задание к занятию "5.4. Оркестрация группой Docker контейнеров на примере Docker Compose"
+# Домашнее задание к занятию "5.4. Оркестрация группой Docker контейнеров на примере Docker Compose". Packer + Terraform + Ansible + Docker.
+На YandexCloud создание Production сервиса на
+примере Prometheus, Grafana, Alert manager, Push gateway,
+Node exporter, cAdvicor, Caddy.
 
 ## Как сдавать задания
 
@@ -70,7 +73,7 @@ yc vpc subnet selete --name my-subnet-a && yc vpc network delete --name net
 ```
 
 <p align="center">
-  <img width="1200" height="600" src="./assets/hw_yc_01.png">                                                                                   
+  <img width="1200" height="600" src="./assets/hw_yc_01.png">
 </p>
 
 ## Задача 2
@@ -111,8 +114,9 @@ terraform plan
 terraform apply
 ```
 <p align="center">
-  <img width="1200" height="600" src="./assets/hw_yc_02.png">                                                                                   
+  <img width="1200" height="600" src="./assets/hw_yc_02.png">
 </p>
+
 
 ## Задача 3
 
@@ -125,30 +129,37 @@ terraform apply
 </p>
 
 Ответ:
-
-#В файл inventory в asible_host добавляем внешний IP.
-2.Virt-homeworks/05-virt-04-docker-compose/src/ansible/inventory
+```
+В файл inventory в asible_host добавляем внешний IP.
+Virt-homeworks/05-virt-04-docker-compose/src/ansible/inventory
 
 node01.netology.cloud ansible_host=51.250.0.11
 
-#переходим в папку с ansible 
-2.Virt-homeworks/05-virt-04-docker-compose/src/ansible
+переходим в папку с ansible
+Virt-homeworks/05-virt-04-docker-compose/src/ansible
 
-#запускаем команду
+запускаем команду
 ansible-playbook provision.yml
 
 Заходим на публичный адрес на порт 3000
 http://51.250.0.11:3000/
-
+```
 <p align="center">
-  <img width="1200" height="600" src="./assets/hw_yc_03.png">                                                                                   
+  <img width="1200" height="600" src="./assets/hw_yc_03.png">
 </p>
 
-#установка ctop для мониторинга процессов контейнера
+Дополнительно. Установка ctop для мониторинга процессов контейнера.
+```
 docker run --rm -ti \
   --name=ctop \
   --volume /var/run/docker.sock:/var/run/docker.sock:ro \
   quay.io/vektorlab/ctop:latest
+```
+
+Уничтожаем все что создали для эксперементов. Что бы не платить деньги за это.
+```
+terraform apply -auto-approve
+```
 
 ## Задача 4 (*)
 
