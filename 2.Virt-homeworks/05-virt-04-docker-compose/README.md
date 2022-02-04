@@ -87,18 +87,17 @@ yc vpc subnet selete --name my-subnet-a && yc vpc network delete --name net
   <img width="1200" height="600" src="./assets/yc_01.png">
 </p>
 
-ответ:
-#устанавливаем terraform. ССлылка выше.
+### Ответ:
 ```
+#устанавливаем terraform. Сcылка выше.
 terraform -version
 Terraform v1.1.4
 on linux_amd64
-```
-Переходим в директорую с terraform 
+
+# Переходим в директорую с terraform 
 cd Virt-homeworks//05-virt-04-docker-compose/src/terraform
 
-запускаем инициализацию. Скачивает последнюю версию плагина yandex облака.
-```
+# Запускаем инициализацию. Скачивает последнюю версию плагина yandex облака.
 terraform init
 Initializing the backend...
 Initializing provider plugins...
@@ -107,10 +106,10 @@ Initializing provider plugins...
 #создаем ключ SSH
 ssh-keygen -t rsa
 
-#с + будет показано, что будет установленно
+# С плюсом (+) будет показано, что будет установленно.
 terraform plan
 
-#запускам процесс сборки
+#запускаем процесс сборки
 terraform apply
 ```
 <p align="center">
@@ -128,17 +127,17 @@ terraform apply
   <img width="1200" height="600" src="./assets/yc_02.png">
 </p>
 
-Ответ:
+### Ответ:
 ```
 В файл inventory в asible_host добавляем внешний IP.
 Virt-homeworks/05-virt-04-docker-compose/src/ansible/inventory
 
 node01.netology.cloud ansible_host=51.250.0.11
 
-переходим в папку с ansible
+# Переходим в папку с ansible
 Virt-homeworks/05-virt-04-docker-compose/src/ansible
 
-запускаем команду
+# Запускаем команду
 ansible-playbook provision.yml
 
 Заходим на публичный адрес на порт 3000
