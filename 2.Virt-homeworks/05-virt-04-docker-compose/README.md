@@ -158,6 +158,8 @@ docker run --rm -ti \
 Уничтожаем все что создали для эксперементов. Что бы не платить деньги за это.
 ```
 terraform apply -auto-approve
+terraform destroy -auto-approve
+
 ```
 
 ## Задача 4 (*)
