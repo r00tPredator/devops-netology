@@ -43,3 +43,6 @@ terraform.rc
 *.iml
 out
 gen
+
+# Ansible history
+.history
