@@ -37,10 +37,18 @@ sudo apt-get update && sudo apt-get install terraform
 ```
 #Интерфейс командной строки Yandex.Cloud (CLI). Скрипт установит CLI и добавит путь до исполняемого файла в переменную окружения PATH.
 curl https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash
-```
 
-Запрос токена для авторизации.
-https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token
+Запрос токена для авторизации. https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token
+
+https://cloud.yandex.ru/docs/cli/operations/authentication/service-account
+Создаем авторизованный ключ для сервисного аккаунта и сохраняем его в файл key.json:
+yc iam key create --service-account-name default-sa --output key.json
+yc config profile create sa-profile
+yc config set service-account-key key.json
+
+Получите список сервисных аккаунтов, которые существуют в вашем облаке:
+yc iam service-account list
+```
 
 ```
 # Инициализация сети
