@@ -155,11 +155,9 @@ docker run --rm -ti \
   quay.io/vektorlab/ctop:latest
 ```
 
-Уничтожаем все что создали для эксперементов. Что бы не платить деньги за это.
+Уничтожаем все что создали для эксперементов. Что бы не платить за это деньги.
 ```
-terraform apply -auto-approve
 terraform destroy -auto-approve
-
 ```
 
 ## Задача 4 (*)
