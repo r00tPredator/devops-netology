@@ -77,5 +77,10 @@ docker swarm update --autolock=true
 Это шифрование в состоянии покоя защищает конфигурацию и данные вашего сервиса от злоумышленников, которые получают доступ к зашифрованным журналам Raft.
 
 <p align="center">
-  <img width="1200" height="600" src="./assets/hw_yc_03.png">
+  <img width="600" height="300" src="./assets/hw_yc_03.png">
 </p>
+
+```
+#удаляем все
+terraform destroy -auto-approve
+```
