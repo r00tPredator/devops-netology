@@ -10,13 +10,13 @@ active
 standby
 
 [active]
-node01.netology.yc ansible_host=62.84.126.27
+node01.netology.yc ansible_host=
 
 [standby]
-node02.netology.yc ansible_host=62.84.127.232
-node03.netology.yc ansible_host=62.84.125.109
+node02.netology.yc ansible_host=
+node03.netology.yc ansible_host=
 
 [workers]
-node04.netology.yc ansible_host=51.250.13.93
-node05.netology.yc ansible_host=62.84.127.60
-node06.netology.yc ansible_host=62.84.126.0
+node04.netology.yc ansible_host=
+node05.netology.yc ansible_host=
+node06.netology.yc ansible_host=
