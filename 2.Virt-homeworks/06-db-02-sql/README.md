@@ -13,11 +13,12 @@
 Приведите получившуюся команду или docker-compose манифест.
 
 ### Ответ:
+```
 docker pull postgres:12
 docker volume create vol1  #путь /var/lib/docker/vol1
 docker volume create vol2  #путь /var/lib/docker/vol2
 docker run --rm --name pg-docker -e -e POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres -ti -p 5432:5432 -v vol1:/var/lib/postgresql/data -v vol2:/var/lib/postgresql/data2 postgres:12
-
+```
 
 ## Задача 2
 
@@ -91,9 +92,9 @@ GRANT DELETE ON TABLE public.orders TO "test-simple-user";
 
 CREATE ROLE "test-admin-user" SUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT LOGIN;
 CREATE DATABASE test_db;
-\l
-\du
-\dt
+\l или ключ -l  - вывести список существующих баз данных
+\du - получения списка существующих ролей
+\dt - Список реляционных схем
 SELECT * FROM information_schema.table_privileges WHERE grantee in ('test-admin-user','test-simple-user');
 
 ```
