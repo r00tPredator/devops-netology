@@ -214,6 +214,11 @@ EXPLAIN SELECT * FROM clients as c WHERE booking is not null;
 
 Приведите список операций, который вы применяли для бэкапа данных и восстановления. 
 
+### Ответ:
+docker exec -t pg-docker pg_dump -U postgres test_db -f /var/lib/postgresql/data/dump_test.sql
+
+docker exec -i pg-docker2 psql -U postgres -d test_db -f /var/lib/postgresql/data/dump_test.sql
+
 ---
 
 ### Как cдавать задание
