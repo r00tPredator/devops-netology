@@ -17,7 +17,7 @@
 docker pull postgres:12
 docker volume create vol1  #путь /var/lib/docker/vol1
 docker volume create vol2  #путь /var/lib/docker/vol2
-docker run --rm --name pg-docker -e -e POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres -ti -p 5432:5432 -v vol1:/var/lib/postgresql/data -v vol2:/var/lib/postgresql/data2 postgres:12
+docker run --rm --name pg-docker -e POSTGRES_PASSWORD=postgres -ti -p 5432:5432 -v vol1:/var/lib/postgresql/data -v vol2:/var/lib/postgresql/data2 postgres:12
 ```
 
 ## Задача 2
