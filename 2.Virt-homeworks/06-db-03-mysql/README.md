@@ -234,7 +234,7 @@ socket          = /var/run/mysqld/mysqld.sock
 datadir         = /var/lib/mysql
 secure-file-priv= NULL
 
-innodb_flush_log_at_trx_commit = 1
+innodb_flush_log_at_trx_commit = 2
 innodb_file_per_table          = enable
 innobd_log_buffer_size         = 1M
 innodb_buffer_poll_size        = 30
