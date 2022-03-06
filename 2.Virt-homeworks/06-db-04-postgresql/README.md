@@ -207,6 +207,36 @@ test_database=# \dt
 
 # Да, ручное разбиение можно было исключить, если изночально она была бы секционированной.
 
+test_database=# \dS+ orders_1
+                                         Table "public.orders_1"
+ Column |         Type          | Collation | Nullable | Default | Storage  | Stats target | Description 
+--------+-----------------------+-----------+----------+---------+----------+--------------+-------------
+ id     | integer               |           |          |         | plain    |              | 
+ title  | character varying(80) |           |          |         | extended |              | 
+ price  | integer               |           |          |         | plain    |              | 
+Partition of: orders FOR VALUES FROM (0) TO (499)
+Partition constraint: ((price IS NOT NULL) AND (price >= 0) AND (price < 499))
+Indexes:
+    "orders_1_lower_idx" btree (lower(title::text))
+Access method: heap
+
+test_database=# \dS+ orders_2
+                                         Table "public.orders_2"
+ Column |         Type          | Collation | Nullable | Default | Storage  | Stats target | Description 
+--------+-----------------------+-----------+----------+---------+----------+--------------+-------------
+ id     | integer               |           |          |         | plain    |              | 
+ title  | character varying(80) |           |          |         | extended |              | 
+ price  | integer               |           |          |         | plain    |              | 
+Partition of: orders FOR VALUES FROM (499) TO (999999999)
+Partition constraint: ((price IS NOT NULL) AND (price >= 499) AND (price < 999999999))
+Indexes:
+    "orders_2_lower_idx" btree (lower(title::text))
+Access method: heap
+
+
+"Партицирование через наследование " является более гибким решением. Тогда не надо было пересоздать таблицу.
+Результат сильно зависит от структуры таблицы, используемых индексов, критерия партицирования, размера партиций и прочих условий.
+
 ```
 
 ## Задача 4
@@ -227,10 +257,12 @@ global	      pg_ident.conf  pg_replslot   pg_stat_tmp	PG_VERSION   postgresql.co
 pg_commit_ts  pg_logical     pg_serial	   pg_subtrans	pg_wal	     postmaster.opts
 pg_dynshmem   pg_multixact   pg_snapshots  pg_tblspc	pg_xact      postmaster.pid
 
-# Для уникальности можно добавить индекс или первичный ключ.
-test_database=# CREATE INDEX ON orders ((lower(title)));
+# Для уникальности можно добавить UNIQUE INDEX.
+test_database=# CREATE UNIQUE INDEX title_idx ON orders_1 (title);
 CREATE INDEX
 
+# Уникальный индекс делает уникальность поля но искуственно, при удалении такого индекса данные смогут быть сново не 
+# уникальными, поэтому лучше делать это через констрейт или через UNIQUE title в момент описания при создании таблицы.
 ```
 ---
 
