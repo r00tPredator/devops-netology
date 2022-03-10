@@ -1,7 +1,7 @@
 # Домашнее задание к занятию "6.5. Elasticsearch"
 
 ## Задача 1
-<details><summary>Задача 1</summary>
+<details><summary>Установка и конфигурирования elastcisearch в docker/summary>
 В этом задании вы потренируетесь в:
 - установке elasticsearch
 - первоначальном конфигурировании elastcisearch
@@ -74,14 +74,14 @@ root@uboo-pc:~# docker push r00tpredator/centos7es:8.1.0
             The push refers to repository [docker.io/r00tpredator/centos7es]
 
 ```
-- [текст Dockerfile ElasticSearch 8.1.0 манифеста](src/dockerfile_es8/Dockerfile)
-- [текст Dockerfile ElasticSearch 7.16.0 манифеста](Dockerfile)
+- [Dockerfile-манифест ElasticSearch 8.1.0](src/dockerfile_es8/Dockerfile)
+- [Dockerfile-манифест ElasticSearch 7.16.0](Dockerfile)
 - [ссылку на образ в репозитории dockerhub](https://hub.docker.com/repository/docker/r00tpredator/centos7es)
 - [ответ `elasticsearch` на запрос пути `/` в json виде](src/localhost.png)
 
 
 ## Задача 2
-<details><summary>Задача 2. Получите список индексов и их статусов, используя API</summary>
+<details><summary>Получите список индексов и их статусов, используя API</summary>
 В этом задании вы научитесь:
 - создавать и удалять индексы
 - изучать состояние кластера
@@ -225,7 +225,7 @@ green  open   .geoip_databases zjAhWQM3T5CkVn2ET6Exxg   1   0         45        
 
 ```
 ## Задача 3
-<details><summary>Задача 3. Бэкапы данных и восстановление</summary>
+<details><summary>Бэкапы данных и восстановление</summary>
 
 В данном задании вы научитесь:
 - создавать бэкапы данных
@@ -254,7 +254,8 @@ green  open   .geoip_databases zjAhWQM3T5CkVn2ET6Exxg   1   0         45        
 
 Подсказки:
 - возможно вам понадобится доработать `elasticsearch.yml` в части директивы `path.repo` и перезапустить `elasticsearch`
-<details>
+</details>
+
 
 ### Ответ 3:
 
