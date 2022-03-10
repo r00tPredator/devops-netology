@@ -1,7 +1,7 @@
 # Домашнее задание к занятию "6.5. Elasticsearch"
 
 ## Задача 1
-
+<details><summary>Задача 1</summary>
 В этом задании вы потренируетесь в:
 - установке elasticsearch
 - первоначальном конфигурировании elastcisearch
@@ -30,9 +30,58 @@
 - elasticsearch в логах обычно описывает проблему и пути ее решения
 
 Далее мы будем работать с данным экземпляром elasticsearch.
+</details>
+
+### Ответ 1: 
+
+```
+docker build -t r00tpredator/centos7es:8.1.0 .
+    Successfully tagged r00tpredator/centos7es:8.1.0
+
+sudo docker images
+    REPOSITORY               TAG       IMAGE ID       CREATED          SIZE
+    r00tpredator/centos7es    8.1.0    6e7a0e7d0b4a   26 minutes ago   3.78GB
+
+docker run --rm -d --name centos_es -p 9200:9200 r00tpredator/centos7es:8.1.0
+
+# fix - ERROR: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+sudo sysctl -w vm.max_map_count=262144
+
+# fix - max file descriptors [4096] for elasticsearch process is too low, increase to at least [65536]
+ulimit -n 65536
+
+# проверка работоспособности
+curl -X GET "localhost:9200"
+{
+  "name" : "netology_test",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "_na_",
+  "version" : {
+    "number" : "8.1.0",
+    "build_flavor" : "default",
+    "build_type" : "tar",
+    "build_hash" : "3700f7679f7d95e36da0b43762189bab189bc53a",
+    "build_date" : "2022-03-03T14:20:00.690422633Z",
+    "build_snapshot" : false,
+    "lucene_version" : "9.0.0",
+    "minimum_wire_compatibility_version" : "7.17.0",
+    "minimum_index_compatibility_version" : "7.0.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+root@uboo-pc:~# docker push r00tpredator/centos7es:8.1.0
+            The push refers to repository [docker.io/r00tpredator/centos7es]
+
+```
+- [текст Dockerfile ElasticSearch 8.1.0 манифеста](src/dockerfile_es8/Dockerfile)
+- [текст Dockerfile ElasticSearch 7.16.0 манифеста](Dockerfile)
+- [ссылку на образ в репозитории dockerhub](https://hub.docker.com/repository/docker/r00tpredator/centos7es)
+- [ответ `elasticsearch` на запрос пути `/` в json виде](src/localhost.png)
+
 
 ## Задача 2
-
+<details><summary>Задача 2. Получите список индексов и их статусов, используя API</summary>
 В этом задании вы научитесь:
 - создавать и удалять индексы
 - изучать состояние кластера
@@ -59,8 +108,124 @@
 
 При проектировании кластера elasticsearch нужно корректно рассчитывать количество реплик и шард,
 иначе возможна потеря данных индексов, вплоть до полной, при деградации системы.
+</details>
 
+### Ответ 2:
+
+```
+Создание индексов:
+curl -X PUT localhost:9200/ind-1 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}'
+curl -X PUT localhost:9200/ind-2 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 2,  "number_of_replicas": 1 }}'
+curl -X PUT localhost:9200/ind-3 -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 4,  "number_of_replicas": 2 }}' 
+
+Список индексов:
+$ curl -X GET 'http://localhost:9200/_cat/indices?v'
+health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .geoip_databases zjAhWQM3T5CkVn2ET6Exxg   1   0         45            0     42.5mb         42.5mb
+green  open   ind-1            _adYIzVJRiuldCnANkfJTg   1   0          0            0       226b           226b
+yellow open   ind-3            kjmKuLBTTza-md6WWH1TJA   4   2          0            0       904b           904b
+yellow open   ind-2            61j7bnPiQOqjbwZnVVSJRw   2   1          0            0       452b           452b
+
+Статус индексов:
+uboo@uboo-pc:~/$ curl -X GET 'http://localhost:9200/_cluster/health/ind-1?pretty'
+{
+  "cluster_name" : "netology_test",
+  "status" : "green",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 1,
+  "active_shards" : 1,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 0,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 100.0
+}
+
+uboo@uboo-pc:~/$ curl -X GET 'http://localhost:9200/_cluster/health/ind-2?pretty' 
+{
+  "cluster_name" : "netology_test",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 2,
+  "active_shards" : 2,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 2,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 50.0
+}
+uboo@uboo-pc:~/$ curl -X GET 'http://localhost:9200/_cluster/health/ind-3?pretty' 
+{
+  "cluster_name" : "netology_test",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 4,
+  "active_shards" : 4,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 8,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 50.0
+}
+
+Статус кластера:
+$ curl -XGET localhost:9200/_cluster/health/?pretty=true
+{
+  "cluster_name" : "netology_test",
+  "status" : "yellow",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 10,
+  "active_shards" : 10,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 10,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 50.0
+
+Удаление индексов:
+$ curl -X DELETE 'http://localhost:9200/ind-1?pretty' 
+{
+  "acknowledged" : true
+}
+$ curl -X DELETE 'http://localhost:9200/ind-2?pretty' 
+{
+  "acknowledged" : true
+}
+$ curl -X DELETE 'http://localhost:9200/ind-3?pretty' 
+{
+  "acknowledged" : true
+}
+$ curl -X GET 'http://localhost:9200/_cat/indices?v'
+health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .geoip_databases zjAhWQM3T5CkVn2ET6Exxg   1   0         45            0     42.5mb         42.5mb
+
+Почему статус Yellow?
+В системе из одного сервера ES хранит на нём все “primary shards”, но создавать “replica shards” такой системе будет негде.
+Поэтому статус в приведённом примере является жёлтым из-за ненулевого значения “unassigned_shards”, которое примерно равно “active_shards”.
+
+```
 ## Задача 3
+<details><summary>Задача 3. Бэкапы данных и восстановление</summary>
 
 В данном задании вы научитесь:
 - создавать бэкапы данных
@@ -89,7 +254,124 @@
 
 Подсказки:
 - возможно вам понадобится доработать `elasticsearch.yml` в части директивы `path.repo` и перезапустить `elasticsearch`
+<details>
 
+### Ответ 3:
+
+Добавил в elasticsearch.yml путь "path.repo: /var/lib/elasticsearch/config/snapshot"
+
+`Создание директории`
+```bash
+$ curl -XPOST localhost:9200/_snapshot/netology_backup?pretty -H 'Content-Type: application/json' -d'{"type": "fs", "settings": { "location":"/var/lib/elasticsearch/config/snapshot" }}'
+```
+`Вывод`
+
+```bash
+{
+  "acknowledged" : true
+}
+
+```
+`Проверяем`
+
+```bash
+$ curl http://localhost:9200/_snapshot/netology_backup?pretty
+```
+
+`Вывод`
+```json
+{
+  "netology_backup" : {
+    "type" : "fs",
+    "settings" : {
+      "location" : "/var/lib/elasticsearch/config/snapshot"
+    }
+  }
+}
+```
+
+`Создание индекса test с 0 репликой и 1 шардом`
+```bash
+curl -X PUT localhost:9200/test -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}'
+```
+`Вывод`
+```json
+{"acknowledged":true,"shards_acknowledged":true,"index":"test"}1
+```
+
+`Поверка результата`
+```
+curl http://localhost:9200/test?pretty
+```
+
+`Ответ`
+
+```json
+{
+  "test" : {
+    "aliases" : { },
+    "mappings" : { },
+    "settings" : {
+      "index" : {
+        "routing" : {
+          "allocation" : {
+            "include" : {
+              "_tier_preference" : "data_content"
+            }
+          }
+        },
+        "number_of_shards" : "1",
+        "provided_name" : "test",
+        "creation_date" : "1646889848878",
+        "number_of_replicas" : "0",
+        "uuid" : "_OuNsVsgTSKF4BOtoAVKhg",
+        "version" : {
+          "created" : "7160099"
+        }
+      }
+    }
+  }
+}
+```
+
+`Cписок файлов в директории со snapshotами`
+```bash
+$ docker exec centos-es ls -l /var/lib/elasticsearch/config/snapshot/
+total 84
+-rw-r--r-- 1 elasticsearch elasticsearch  1960 Mar 10 06:03 index-1
+-rw-r--r-- 1 elasticsearch elasticsearch     8 Mar 10 06:03 index.latest
+drwxr-xr-x 6 elasticsearch elasticsearch  4096 Mar 10 05:27 indices
+-rw-r--r-- 1 elasticsearch elasticsearch 29198 Mar 10 05:27 meta-7v-f5vefQfi8enIhvkKihQ.dat
+-rw-r--r-- 1 elasticsearch elasticsearch 29198 Mar 10 06:03 meta-T7fkOQzARyevi1gflNJzIg.dat
+-rw-r--r-- 1 elasticsearch elasticsearch   712 Mar 10 05:27 snap-7v-f5vefQfi8enIhvkKihQ.dat
+-rw-r--r-- 1 elasticsearch elasticsearch   709 Mar 10 06:03 snap-T7fkOQzARyevi1gflNJzIg.dat
+
+
+Удалите индекс test и создание индекс test-2.
+curl -X DELETE 'http://localhost:9200/test?pretty'
+{
+  "acknowledged" : true
+
+
+Добавление индекса test-2
+curl -X PUT localhost:9200/test-2?pretty -H 'Content-Type: application/json' -d'{ "settings": { "number_of_shards": 1,  "number_of_replicas": 0 }}'
+{
+  "acknowledged" : true,
+  "shards_acknowledged" : true,
+  "index" : "test-2"
+}
+
+Команда восстановления:
+curl -X POST localhost:9200/_snapshot/netology_backup/elasticsearch/_restore?pretty -H 'Content-Type: application/json' -d'{"include_global_state":true}'
+
+
+Статус индексов:
+$ curl -X GET http://localhost:9200/_cat/indices?v
+health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .geoip_databases omX99HdSReOJnyYzaVPjGQ   1   0         45            0     42.5mb         42.5mb
+green  open   test-2           h9tIyX7fRzeQt7Rq3DMiTg   1   0          0            0       226b           226b
+
+```
 ---
 
 ### Как cдавать задание
