@@ -1,7 +1,7 @@
 # Домашнее задание к занятию "6.5. Elasticsearch"
 
 ## Задача 1
-<details><summary>Установка и конфигурирования elastcisearch в docker/summary>
+<details><summary>Установка и конфигурирования elastcisearch в docker </summary>
 В этом задании вы потренируетесь в:
 - установке elasticsearch
 - первоначальном конфигурировании elastcisearch
@@ -305,7 +305,7 @@ curl -X PUT localhost:9200/test -H 'Content-Type: application/json' -d'{ "settin
 curl http://localhost:9200/test?pretty
 ```
 
-`Ответ`
+`Вывод`
 
 ```json
 {
