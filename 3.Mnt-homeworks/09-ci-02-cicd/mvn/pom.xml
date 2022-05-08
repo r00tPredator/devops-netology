@@ -13,12 +13,12 @@
     </repository>
   </repositories>
   <dependencies>
-<!--     <dependency>
-      <groupId>somegroup</groupId>
-      <artifactId>someart</artifactId>
-      <version>somevers</version>
-      <classifier>someclass</classifier>
-      <type>sometype</type>
-    </dependency> -->
+   <dependency>
+      <groupId>netology</groupId>
+      <artifactId>java</artifactId>
+      <version>8_282</version>
+      <classifier>distrib</classifier>
+      <type>tar.gz</type>
+    </dependency>
   </dependencies>
 </project>

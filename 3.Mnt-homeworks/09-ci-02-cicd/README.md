@@ -24,6 +24,24 @@
 8. Запускаем анализатор повторно - проверяем, что QG пройдены успешно
 9. Делаем скриншот успешного прохождения анализа, прикладываем к решению ДЗ
 
+### Ответ SonarQube: 
+```
+sonar-scanner --version
+INFO: Scanner configuration file: /opt/sonar-scanner/conf/sonar-scanner.properties
+INFO: Project root configuration file: NONE
+INFO: SonarScanner 4.7.0.2747
+INFO: Java 11.0.14.1 Eclipse Adoptium (64-bit)
+INFO: Linux 5.13.0-40-generic amd64
+
+
+sonar-scanner   -Dsonar.projectKey=Netology    -Dsonar.sources=.   -Dsonar.host.url=http://localhost:9000   -Dsonar.login=ccaa7fd20c83b4df381755ab7e5dc0430860dffa -Dsonar.coverage.exclusions=fail.py
+
+```
+<p align="center">
+  <img src="./assets/01_passed.png">
+</p>
+
+
 ## Знакомство с Nexus
 
 ### Подготовка к выполнению
@@ -47,7 +65,14 @@
 3. Проверяем, что все файлы загрузились успешно
 4. В ответе присылаем файл `maven-metadata.xml` для этого артефекта
 
-### Знакомство с Maven
+### Ответ Знакомство с Nexus: 
+Файл [`maven-metadata.xml`](./assets/maven-metadata.xml)
+
+<p align="center">
+  <img src="./assets/02_maven-metadata.png")
+</p>
+
+## Знакомство с Maven
 
 ### Подготовка к выполнению
 
@@ -62,6 +87,26 @@
 2. Запускаем команду `mvn package` в директории с `pom.xml`, ожидаем успешного окончания
 3. Проверяем директорию `~/.m2/repository/`, находим наш артефакт
 4. В ответе присылаем исправленный файл `pom.xml`
+
+### Ответ Знакомство с Maven:
+
+```
+mvn --version
+Apache Maven 3.6.3
+Maven home: /usr/share/maven
+Java version: 11.0.15, vendor: Private Build, runtime: /usr/lib/jvm/java-11-openjdk-amd64
+Default locale: ru_RU, platform encoding: UTF-8
+OS name: "linux", version: "5.13.0-40-generic", arch: "amd64", family: "unix"
+
+mvn package
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:20 min
+[INFO] Finished at: 2022-05-08T11:57:59+11:00
+[INFO] ------------------------------------------------------------------------
+```
+Исправный файл [`pom.xml`](./pom.xml)
 
 ---
 
