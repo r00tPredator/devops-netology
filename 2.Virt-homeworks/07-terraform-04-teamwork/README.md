@@ -14,6 +14,19 @@
 
 В качестве результата задания приложите снимок экрана с успешным применением конфигурации.
 
+### Ответ:
+<p align="center">
+  <img src="./assets/hw_yc_1.png">
+</p>
+<br>
+<p align="center">
+  <img src="./assets/hw_yc_2.png">
+</p>
+<br>
+<p align="center">
+  <img src="./assets/hw_yc_3.png">
+</p>
+
 ## Задача 2. Написать серверный конфиг для атлантиса. 
 
 Смысл задания – познакомиться с документацией 
@@ -31,6 +44,22 @@
 1. Необходимо включить автопланирование при изменении любых файлов `*.tf`.
 
 В качестве результата приложите ссылку на файлы `server.yaml` и `atlantis.yaml`.
+
+### Ответ:
+```
+# для запуска сервера
+TOKEN=""  - git hub token
+USERNAME="r00tpredator"
+URL="https://****-***-**-****-***.jp.ngrok.io/" 
+SECRET="" - https://www.random.org/strings/
+REPO_ALLOWLIST="github.com/r00tPredator/atlantis"
+REPO_CONFIG="/home/uboo/devops/atlantis/server.yaml"
+atlantis server --atlantis-url="$URL" --gh-user="$USERNAME" --gh-token="$TOKEN" --gh-webhook-secret="$SECRET" --repo-allowlist="$REPO_ALLOWLIST" --repo-config="$REPO_CONFIG"
+```
+
+[server.yaml](./src/server.yaml)
+[atlantis.yaml](./src/atlantis.yaml)
+
 
 ## Задача 3. Знакомство с каталогом модулей. 
 
