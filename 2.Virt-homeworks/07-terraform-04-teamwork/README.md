@@ -58,6 +58,7 @@ atlantis server --atlantis-url="$URL" --gh-user="$USERNAME" --gh-token="$TOKEN" 
 ```
 
 [server.yaml](./src/server.yaml)
+
 [atlantis.yaml](./src/atlantis.yaml)
 
 
