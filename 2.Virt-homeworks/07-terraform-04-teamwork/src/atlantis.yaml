@@ -1,0 +1,14 @@
+version: 3
+projects:
+- dir: .
+  # Запускаем планирование и применяем для workspace stage
+  workspace: stage
+  autoplan:
+    # Включаем автопланирование при изменении любых файлов *.tf
+    when_modified: ["../modules/**/*.tf","../services/**/*.tf","*.tf*"]
+- dir: .
+  # Запускаем планирование и применяем для worspace prod.
+  workspace: prod
+  autoplan:
+  # Включаем автопланирование при изменении любых файлов *.tf
+    when_modified: ["../modules/**/*.tf","../services/**/*.tf","*.tf*"]
