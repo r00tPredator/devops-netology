@@ -48,7 +48,7 @@ terraform plan
 terraform apply -auto-approve
 ```
 <p align="center">
-  <img width="1200" height="600" src="./assets/hw_yc_01.png">
+  <img src="./assets/hw_yc_01.png">
 </p>
 
 ## Задача 3
@@ -62,7 +62,7 @@ docker service ls
 ### Ответ:
 
 <p align="center">
-  <img width="1200" height="600" src="./assets/hw_yc_02.png">
+  <img src="./assets/hw_yc_02.png">
 </p>
 
 ## Задача 4 (*)
@@ -77,7 +77,7 @@ docker swarm update --autolock=true
 Это шифрование в состоянии покоя защищает конфигурацию и данные вашего сервиса от злоумышленников, которые получают доступ к зашифрованным журналам Raft.
 
 <p align="center">
-  <img width="600" height="300" src="./assets/hw_yc_03.png">
+  <img src="./assets/hw_yc_03.png">
 </p>
 
 ```
