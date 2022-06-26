@@ -15,3 +15,15 @@
     hosts:
       localhost:
         ansible_connection: local
+
+# prod:
+#     hosts:
+#       centos7:
+#         ansible_hosts: centos7
+#         ansible_connection: docker
+#       ubuntu:
+#         ansible_connection: docker
+#       fedora:
+#         ansible_connection: docker
+#       localhost:
+#         ansible_connection: local
