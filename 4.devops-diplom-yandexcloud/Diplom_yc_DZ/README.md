@@ -20,7 +20,7 @@
 7. Настроить CI/CD для автоматического развёртывания приложения.
 8. Настроить мониторинг инфраструктуры с помощью стека: Prometheus, Alert Manager и Grafana.
 
-Полное описание здесь [README.md](../README.md)
+Полное описание задания можно посомтреть здесь [README.md](../README.md)
 
 ---
 ## Этапы выполнения:
@@ -28,14 +28,10 @@
 
 - Зарегистрирован домен `dmitryzakharov.website`
 - Настроено хостинг DNS для домена в YandexCloud `ns1.yandexcloud.net` и `ns2.yandexcloud.net`
-<p align="center">
-  <img src="./img/01_webhosting.png)">
-</p>
+![](img/01_webhosting.png)
 
 Создан S3 bucket YC аккаунте.
-<p align="center">
-  <img src="./img/02_backet.png)">
-</p>
+![](img/02_backet.png)
 
 ## Создание инфраструктуры
 Структура файлов:
@@ -59,9 +55,9 @@ skip_region_validation      = true
 skip_credentials_validation = true
 ```
 -  DNS записи прописаны в `dns.tf` и передаются в YandexCloud.
-<p align="center">
-  <img src="./img/03_dns.png)">
-</p>
+
+![](img/03_dns.png)
+
 -  Подключение к облаку происходит через сервис аккаунт с ключем `service_account_key_file = "key.json"`. Ключ скрыт в `gitignore`. 
 
 Развертывание инфраструктуры производится командой `terraform apply` из каталога `terraform` данного репозитория.
@@ -75,13 +71,9 @@ $ terraform init -backend-config=backend.conf
 $ terraform plan
 $ terraform apply
 ```
-<p align="center">
-  <img src="./img/04_yc.png)">
-</p>
+![](img/04_yc.png)
 
-<p align="center">
-  <img src="./img/05_yc.png)">
-</p>
+![](img/05_yc.png)
 
 ## Ход действия Ansible.
 
@@ -114,9 +106,7 @@ ansible-playbook -i ../ansible/inventory/stage.yml -t runner ../ansible/site.yml
 ansible-playbook -i ../ansible/inventory/stage.yml -t copy_ssh ../ansible/site.yml"
 
 После завершения мы увидем страницу с установленным Wordpress `https://www.dmitryzakharov.website`
-<p align="center">
-  <img src="./img/06_web.png)">
-</p>
+![](img/06_web.png)
 
 ## gitlab и СICD
 Имя пользоватля `root` пароль `gitlab_initial_root_password` можно посмотреть здесь `group_vars\cvs`
@@ -184,4 +174,4 @@ git --git-dir=wp-project/.git --work-tree=wp-project push --tags
 ![](img/prometheus_02.png)
 
 ## Alertmanager
-![](img/alermanager_01.png)
+![](img/alertmanager_01.png)
