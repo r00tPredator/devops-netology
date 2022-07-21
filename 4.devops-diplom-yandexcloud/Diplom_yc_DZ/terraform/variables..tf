@@ -12,6 +12,10 @@ variable "folder_id" {
   default = "b1grqk6q3ul251r9fdda"
 }
 
+# variable "yc_token" {
+#    default = ""
+# }
+
 # процент гарантированного обеспечения CPU
 variable "core_fraction" {
   type = number
