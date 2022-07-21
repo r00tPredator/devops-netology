@@ -1,104 +1,187 @@
-Дипломный проект по курсу DevOps
-================================
---------------------------------
+# Дипломный практикум в YandexCloud. Дмитрий Захаров
+  * [Цели:](#цели)
+  * [Этапы выполнения:](#этапы-выполнения)
+      * [Регистрация доменного имени](#регистрация-доменного-имени)
+      * [Создание инфраструктуры](#создание-инфраструктуры)
+          * Установка Nginx и LetsEncrypt
+          * Установка кластера MySQL
+          * Установка WordPress
+          * Установка Gitlab CE, Gitlab Runner и настройка CI/CD
+          * Установка Prometheus, Alert Manager, Node Exporter и Grafana
 
-Состав проекта
-==============
+---
+## Цели:
+1. Зарегистрировать доменное имя (любое на ваш выбор в любой доменной зоне).
+2. Подготовить инфраструктуру с помощью Terraform на базе облачного провайдера YandexCloud.
+3. Настроить внешний Reverse Proxy на основе Nginx и LetsEncrypt.
+4. Настроить кластер MySQL.
+5. Установить WordPress.
+6. Развернуть Gitlab CE и Gitlab Runner.
+7. Настроить CI/CD для автоматического развёртывания приложения.
+8. Настроить мониторинг инфраструктуры с помощью стека: Prometheus, Alert Manager и Grafana.
 
+Полное описание здесь [README.md](../README.md)
+
+---
+## Этапы выполнения:
+## Регистрация доменного имени
+
+- Зарегистрирован домен `dmitryzakharov.website`
+- Настроено хостинг DNS для домена в YandexCloud `ns1.yandexcloud.net` и `ns2.yandexcloud.net`
+<p align="center">
+  <img src="./img/01_webhosting.png)">
+</p>
+
+Создан S3 bucket YC аккаунте.
+<p align="center">
+  <img src="./img/02_backet.png)">
+</p>
+
+## Создание инфраструктуры
+Структура файлов:
+- `main.tf`      Настройки instance.
+- `providers.tf` Содержит настройки для подклчюения к провайдеру.
+- `variables.tf` Содержит переменные. acme_server - используемый для получения сертификатов LetsEncrypte. 
+   Для тестов выставлен `letsencrypttest`, после окончания тестов выставляем `letsencrypt`
+- `network.tf`   Содержит настройки сетей.
+- `output.tf`    Выходное значение.
+- `inventory.tf` Содержит описание подключение к хостам и записывает его в папку `ansible.
+- `group_vars.tf`Описание переменных и запись в`/ansible/group_vars/all.yml`
+- `backend.conf` Описывает подключние к backet yandex. Скрыт в `gitignore`.
 ```
-netology-diplom
-|-ansible
-|-gitlab
-|  |-resources
-|  |-tf-scripts
-|-result
-|-terraform
-
+endpoint   = "storage.yandexcloud.net"
+bucket     = <your-bucket-name>
+region     = "ru-central1"
+key        = "terraform.tfstate"
+access_key = <your-access-key>
+secret_key = <your-secret-key>
+skip_region_validation      = true
+skip_credentials_validation = true
 ```
+-  DNS записи прописаны в `dns.tf` и передаются в YandexCloud.
+<p align="center">
+  <img src="./img/03_dns.png)">
+</p>
+-  Подключение к облаку происходит через сервис аккаунт с ключем `service_account_key_file = "key.json"`. Ключ скрыт в `gitignore`. 
 
-Назначение директорий
-=====================
-- ansible - директория с ansible playbook, выполняющим конфигурирование инфраструктуры
-- gitlab - корневая директория для демонстрации CI/CD процесса в GitLab
-  - resources - директория содержит ресурсы, необходимые для демонстрации CI/CD процесса в GitLab
-  - tf-demo - директория содержит bash-скрипты, выполняемые terraform
-- result - директория со скриншотами работающей инфраструктуры
-- terraform - директория с terraform скриптами, выполняющими развертывание инфраструктуры в Yandex Cloud с последующим конфигурированием средствами ansible
+Развертывание инфраструктуры производится командой `terraform apply` из каталога `terraform` данного репозитория.
 
-Необходимые действия при тестировании
-=====================================
+Запуск в среде stage:
+```bash
 $ cd terraform
 $ terraform workspace new stage
 $ terraform workspace select stage 
 $ terraform init -backend-config=backend.conf
 $ terraform plan
 $ terraform apply
-
-1) выполнить эекспорт переменных окружения:
-```shell
-export YC_TOKEN=xxxxxxxxxxxxxxxxxxxxxxx
-export YC_CLOUD_ID=xxxxxxxxxxxxxxxxxxxxxxx
-export AWS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxxxxx
-export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxx
 ```
-  - YC_TOKEN - токен Yandex Cloud
-  - YC_CLOUD_ID - id облака
-  - AWS_ACCESS_KEY_ID - access_key бакета в Yandex Cloud
-  - AWS_SECRET_ACCESS_KEY - secret_key бакета в Yandex Cloud
+<p align="center">
+  <img src="./img/04_yc.png)">
+</p>
 
-2) актуализировать переменные в terraform/vars.tf
-  - folder_id - id директории в Yandex Cloud
-  - core_fraction - процент гарантированного обеспечения CPU
-  - preemptible - прерываемая ВМ? (bool)
-  - acme_server - acme сервер, используемый для получения сертификатов. доступные значения:
-  ```
-  CA_NAMES="
-  ZeroSSL.com,zerossl
-  LetsEncrypt.org,letsencrypt
-  LetsEncrypt.org_test,letsencrypt_test,letsencrypttest
-  BuyPass.com,buypass
-  BuyPass.com_test,buypass_test,buypasstest
-  SSL.com,sslcom
-  Google.com,google
-  Google.com_test,googletest,google_test
-  "
-  ```
-   *https://github.com/acmesh-official/acme.sh/blob/master/acme.sh#L41
+<p align="center">
+  <img src="./img/05_yc.png)">
+</p>
 
-  - в проекте по умолчанию используется 'letsencrypttest', для полноценного сертификата, заменить на 'letsencrypt'.
+## Ход действия Ansible.
 
-3) перейти в каталог terraform и последовательно выполнить:
-  ```shell
-  terraform init
-  terraform plan
-  terraform apply -auto-approve
-  ```
+ Версия `ansible [core 2.13.1]`. Все необходимые роли находятся в каталоге `ansible\roles`. 
+ -`ansible\inventory\stage.yml` находится inventory для playbook.
+ -`ansible\site.yml` сам playbook
+ 
+Все действие описано в `ansible.tf` и запускается вместе с `terraform apply`. Можно переименовать этот файл `ansible.bcp` и запускать отдельно для тестирования.
+ 
+ansible-playbook -i ../ansible/inventory/stage.yml -t squid ../ansible/site.yml"
 
-4) 25-35 минут (справедливо для прерываемых машин с 20% гарантированного времени CPU) ожидать развертывания инфраструктуры с последующим автоматическим конфигурированием, и автоматической демострацией CI/CD процесса деплоя по тегам.
+ansible-playbook -i ../ansible/inventory/stage.yml -t preconfigure ../ansible/site.yml"
 
-Скриншоты
-=========
+ansible-playbook -i ../ansible/inventory/stage.yml -t nginx ../ansible/site.yml"
 
-## wordpress
-![](result/Screenshot%20from%202022-07-10%2015-20-01.png)
-![](result/Screenshot%20from%202022-07-10%2015-31-06.png)
+ansible-playbook -i ../ansible/inventory/stage.yml -t mysql ../ansible/site.yml" 
 
-## gitlab
-![](result/Screenshot%20from%202022-07-10%2015-22-10.png)
-![](result/Screenshot%20from%202022-07-10%2015-22-33.png)
-![](result/Screenshot%20from%202022-07-10%2015-23-20.png)
+ansible-playbook -i ../ansible/inventory/stage.yml -t wordpress ../ansible/site.yml"
 
-## prometheus
-![](result/Screenshot%20from%202022-07-10%2015-23-32.png)
+ansible-playbook -i ../ansible/inventory/stage.yml -t prometheus ../ansible/site.yml"
 
-## alertmanager
-![](result/Screenshot%20from%202022-07-10%2015-23-44.png)
+ansible-playbook -i ../ansible/inventory/stage.yml -t alertmanager ../ansible/site.yml"
 
-## grafana
-![](result/Screenshot%20from%202022-07-10%2015-24-01.png)
+ansible-playbook -i ../ansible/inventory/stage.yml -t grafana ../ansible/site.yml"
 
-## certificate
-![](result/Screenshot%20from%202022-07-10%2015-24-41.png)
+ansible-playbook -i ../ansible/inventory/stage.yml -t gitlab ../ansible/site.yml"
 
-## infrastructure
-![](result/Screenshot%20from%202022-07-10%2015-28-37.png)
+ansible-playbook -i ../ansible/inventory/stage.yml -t runner ../ansible/site.yml"
+
+ansible-playbook -i ../ansible/inventory/stage.yml -t copy_ssh ../ansible/site.yml"
+
+После завершения мы увидем страницу с установленным Wordpress `https://www.dmitryzakharov.website`
+<p align="center">
+  <img src="./img/06_web.png)">
+</p>
+
+## gitlab и СICD
+Имя пользоватля `root` пароль `gitlab_initial_root_password` можно посмотреть здесь `group_vars\cvs`
+![](img/gitlab_01.png) 
+
+В папке`gitlab\tf-scripts` есть два скрипта `gitlab_01.sh` и `gitlab_02.sh` Для запуска коммита и для обновление по tag. 
+
+`gitlab_01.sh`
+```
+export GIT_SSL_NO_VERIFY=1
+cd gitlab
+git init ../gitlab/wp-project
+git --git-dir=wp-project/.git --work-tree=wp-project remote add origin https://root:Net0logy@gitlab.dmitryzakharov.website/root/wp-project.git
+git --git-dir=wp-project/.git --work-tree=wp-project add .
+git --git-dir=wp-project/.git --work-tree=wp-project commit -m 'init'
+$ git --git-dir=wp-project/.git --work-tree=wp-project push -u origin master
+Перечисление объектов: 14, готово.
+Подсчет объектов: 100% (14/14), готово.
+При сжатии изменений используется до 8 потоков
+Сжатие объектов: 100% (14/14), готово.
+Запись объектов: 100% (14/14), 2.41 КиБ | 412.00 КиБ/с, готово.
+Всего 14 (изменения 5), повторно использовано 0 (изменения 0)
+remote: 
+remote: 
+remote: The private project root/wp-project was successfully created.
+remote: 
+remote: To configure the remote, run:
+remote:   git remote add origin https://gitlab.dmitryzakharov.website/root/wp-project.git
+remote: 
+remote: To view the project, visit:
+remote:   https://gitlab.dmitryzakharov.website/root/wp-project
+remote: 
+remote: 
+remote: 
+To https://gitlab.dmitryzakharov.website/root/wp-project.git
+ * [new branch]      master -> master
+Ветка «master» отслеживает внешнюю ветку «master» из «origin».
+```
+
+`gitlab_02.sh`
+```
+# Применим теперь tag
+# Cкопируем файл изменениями в папку c проектом wp-project
+cd gitlab
+cp resources/02-update/* ../gitlab/wp-project/
+git --git-dir=wp-project/.git --work-tree=wp-project add .
+git --git-dir=wp-project/.git --work-tree=wp-project commit -m 'update wordpress'
+git --git-dir=wp-project/.git --work-tree=wp-project tag -a v1.0 -m 'version 1.0'
+git --git-dir=wp-project/.git --work-tree=wp-project push
+git --git-dir=wp-project/.git --work-tree=wp-project push --tags
+```
+После применения коммита по tag мы увидем изменения на сайте.
+![](img/cicd_01.png)
+![](img/cicd_02_runner.png)
+![](img/cicd_03.png)
+
+## MySQL
+![](img/mysql_01.png)
+
+## Grafana
+![](img/grafana_01.png)
+
+## Prometheus
+![](img/prometheus_01.png)
+![](img/prometheus_02.png)
+
+## Alertmanager
+![](img/alermanager_01.png)
