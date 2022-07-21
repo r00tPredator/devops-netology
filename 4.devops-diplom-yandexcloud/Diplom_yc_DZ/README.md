@@ -58,7 +58,7 @@ skip_credentials_validation = true
 
 ![](img/03_dns.png)
 
--  Подключение к облаку происходит через сервис аккаунт с ключем `service_account_key_file = "key.json"`. Ключ скрыт в `gitignore`. 
+-  Подключение к облаку происходит через `service account` с ключем `service_account_key_file = "key.json"`. Ключ скрыт в `gitignore`. 
 
 Развертывание инфраструктуры производится командой `terraform apply` из каталога `terraform` данного репозитория.
 
@@ -78,10 +78,10 @@ $ terraform apply
 ## Ход действия Ansible.
 
  Версия `ansible [core 2.13.1]`. Все необходимые роли находятся в каталоге `ansible\roles`. 
- -`ansible\inventory\stage.yml` находится inventory для playbook.
- -`ansible\site.yml` сам playbook
+ - `ansible\inventory\stage.yml` находится inventory для playbook.
+ - `ansible\site.yml` сам playbook
  
-Все действие описано в `ansible.tf` и запускается вместе с `terraform apply`. Можно переименовать этот файл `ansible.bcp` и запускать отдельно для тестирования.
+Все действие описано в `ansible.tf`, запускается вместе с `terraform apply`. Можно переименовать этот файл `ansible.bcp` и запускать отдельно для тестирования.
  
 ansible-playbook -i ../ansible/inventory/stage.yml -t squid ../ansible/site.yml"
 
@@ -106,10 +106,13 @@ ansible-playbook -i ../ansible/inventory/stage.yml -t runner ../ansible/site.yml
 ansible-playbook -i ../ansible/inventory/stage.yml -t copy_ssh ../ansible/site.yml"
 
 После завершения мы увидем страницу с установленным Wordpress `https://www.dmitryzakharov.website`
+
 ![](img/06_web.png)
 
-## gitlab и СICD
+## Gitlab и СICD
+
 Имя пользоватля `root` пароль `gitlab_initial_root_password` можно посмотреть здесь `group_vars\cvs`
+
 ![](img/gitlab_01.png) 
 
 В папке`gitlab\tf-scripts` есть два скрипта `gitlab_01.sh` и `gitlab_02.sh` Для запуска коммита и для обновление по tag. 
@@ -159,8 +162,13 @@ git --git-dir=wp-project/.git --work-tree=wp-project push
 git --git-dir=wp-project/.git --work-tree=wp-project push --tags
 ```
 После применения коммита по tag мы увидем изменения на сайте.
+
 ![](img/cicd_01.png)
-![](img/cicd_02_runner.png)
+<br>
+
+![](img/cicd_02_runner.png) 
+<br>
+
 ![](img/cicd_03.png)
 
 ## MySQL
@@ -170,7 +178,7 @@ git --git-dir=wp-project/.git --work-tree=wp-project push --tags
 ![](img/grafana_01.png)
 
 ## Prometheus
-![](img/prometheus_01.png)
+![](img/prometheus_01.png)<br>
 ![](img/prometheus_02.png)
 
 ## Alertmanager
