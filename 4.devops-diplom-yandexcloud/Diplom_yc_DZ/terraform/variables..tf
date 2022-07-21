@@ -2,14 +2,14 @@
 # https://console.cloud.yandex.ru/cloud?section=overview
 variable "cloud_id" {
   type = string
-  default = "b1g2hl0o17f780m7bh0d"
+  default = ""
 }
 
 # Заменить на Folder своего облака
 # https://console.cloud.yandex.ru/cloud?section=overview
 variable "folder_id" {
   type = string
-  default = "b1grqk6q3ul251r9fdda"
+  default = ""
 }
 
 # variable "yc_token" {
