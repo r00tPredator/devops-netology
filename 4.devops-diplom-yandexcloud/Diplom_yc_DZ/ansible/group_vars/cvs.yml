@@ -1,0 +1,4 @@
+---
+gitlab_initial_root_password: 'Net0logy'
+gitlab_initial_shared_runners_registration_token: 'MyT0k#n001'
+gitlab_runner_registration_token: "{{ gitlab_initial_shared_runners_registration_token }}"

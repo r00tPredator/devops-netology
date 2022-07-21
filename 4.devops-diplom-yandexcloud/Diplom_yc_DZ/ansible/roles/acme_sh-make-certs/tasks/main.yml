@@ -1,0 +1,36 @@
+---
+- name: get acme.sh
+  become: true
+  ansible.builtin.get_url:
+    url: https://get.acme.sh
+    dest: /root/acme.sh
+
+- name: install acme.sh
+  become: true
+  ansible.builtin.shell:
+    cmd: sh /root/acme.sh
+
+- name: get certs for web_resources
+  become: true
+  vars:
+    acme_resources_string: >-
+      {% for acme_resource in acme_resources %}
+      -d {{ acme_resource.name }}.{{ acme_domain }} 
+      {% endfor %}
+  ansible.builtin.shell:
+    cmd: "/root/.acme.sh/acme.sh --issue --nginx -d {{ acme_domain }} {{ acme_resources_string }} --server {{ acme_server }} --force"
+
+- name: exists directory for certs
+  become: true
+  ansible.builtin.file:
+    path: "/etc/nginx/ssl/{{ domain_name }}"
+    state: directory
+
+- name: install certs
+  become: true
+  ansible.builtin.shell:
+    cmd: >- 
+      /root/.acme.sh/acme.sh --install-cert -d {{ acme_domain }}
+      --key-file /etc/nginx/ssl/{{ domain_name }}/privatekey.key  
+      --fullchain-file /etc/nginx/ssl/{{ domain_name }}/fullchain.cer 
+      --reloadcmd "systemctl reload nginx"

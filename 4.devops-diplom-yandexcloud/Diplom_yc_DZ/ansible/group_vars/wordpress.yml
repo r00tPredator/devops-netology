@@ -1,0 +1,12 @@
+---
+node_exporter_open_port: yes
+
+wp_db_name: wordpress
+wp_db_user: wordpress
+wp_db_password: wordpress
+
+wp_uri: "https://www.{{ domain_name }}"
+wp_site_title: "DZakharov"
+wp_site_admin_name: "predator" 
+wp_site_admin_password: "P@ssw0rd" 
+wp_site_admin_email: info@{{ domain_name }}

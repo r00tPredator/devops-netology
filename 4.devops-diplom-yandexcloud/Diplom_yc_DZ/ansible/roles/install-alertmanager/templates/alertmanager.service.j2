@@ -1,0 +1,21 @@
+[Unit]
+Description=Alertmanager for prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Environment="GOMAXPROCS={{ alertmanager_cpu }}"
+User=prometheus
+Group=prometheus
+Restart=always
+ExecStart=/usr/local/bin/alertmanager \
+          --config.file=/etc/alertmanager/alertmanager.yml \
+          --storage.path=/var/lib/prometheus/alertmanager
+            
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutStopSec=20s
+SendSIGKILL=no
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,2 @@
+---
+gitlab_external_url: "https://gitlab.{{ domain_name }}"

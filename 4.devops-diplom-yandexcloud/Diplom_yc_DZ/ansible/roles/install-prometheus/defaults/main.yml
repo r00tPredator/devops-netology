@@ -1,0 +1,4 @@
+---
+prometheus_version: "2.36.2"
+prometheus_proxy: 
+prometheus_cpu: "2"

@@ -1,0 +1,55 @@
+---
+- name: check required packages installed
+  become: true
+  ansible.builtin.yum:
+    name:
+      - yum-utils
+      - firewalld
+      - python-firewall
+    state: present
+
+- name: add nginx repo
+  become: true
+  ansible.builtin.copy:
+    content: |
+      [nginx-stable]
+      name=nginx stable repo
+      baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+      gpgcheck=1
+      enabled=1
+      gpgkey=https://nginx.org/keys/nginx_signing.key
+      module_hotfixes=true
+    dest: /etc/yum.repos.d/nginx.repo
+
+- name: install nginx
+  become: true
+  ansible.builtin.yum:
+    name:
+      - nginx
+    state: present
+    disable_gpg_check: yes
+
+- name: enable nginx
+  become: true
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: firewalld is started and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: enable http and https at firewalld
+  become: true
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    state: enabled
+    immediate: yes
+    permanent: yes
+  loop:
+    - http
+    - https

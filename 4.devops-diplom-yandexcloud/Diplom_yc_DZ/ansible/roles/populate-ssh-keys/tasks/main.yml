@@ -1,0 +1,42 @@
+---
+- name: check requirements
+  become: true
+  ansible.builtin.yum:
+    name:
+      - python2-cryptography
+      - python36-cryptography
+    state: present
+    disable_gpg_check: yes
+
+- block:
+    - name: check .ssh folder exists
+      become: true
+      ansible.builtin.file:
+        path: /home/gitlab-runner/.ssh
+        state: directory
+        mode: '0700'
+        owner: gitlab-runner
+        group: gitlab-runner 
+
+    - name: generate ssh keys (runner host)
+      become: true
+      community.crypto.openssh_keypair:
+        path: /home/gitlab-runner/.ssh/id_rsa
+        owner: gitlab-runner
+        group: gitlab-runner
+        state: present
+
+    - name: get public key value
+      become: true
+      ansible.builtin.slurp:
+        src: /home/gitlab-runner/.ssh/id_rsa.pub
+      register: ssh_public_key
+
+  when: inventory_hostname in groups['runner']
+
+- name: add key in authorized_keys
+  ansible.posix.authorized_key:
+    user: "{{ ansible_ssh_user }}"
+    key: "{{ hostvars[groups['runner'][0]]['ssh_public_key']['content'] | b64decode }}"
+    state: present
+  when: inventory_hostname in groups['wordpress']

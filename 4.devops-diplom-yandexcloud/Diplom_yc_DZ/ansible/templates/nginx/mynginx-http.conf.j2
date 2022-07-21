@@ -1,0 +1,17 @@
+server {
+  listen 80;
+  server_name {{ domain_name }};
+  
+  root /var/www/html;
+}
+
+{% for resource in web_resources %}
+server {
+  listen 80;
+  server_name {{ resource.name }}.{{ domain_name }};
+  
+  location / {
+    proxy_pass http://{{ resource.ip }}:{{ resource.port }};
+  }
+}
+{% endfor %}

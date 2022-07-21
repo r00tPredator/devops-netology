@@ -1,0 +1,8 @@
+---
+- name: configure yum proxy
+  become: true
+  ansible.builtin.lineinfile:
+    line: "proxy={{ yum_proxy }}"
+    regexp: '^proxy\s*='
+    state: present
+    path: /etc/yum.conf

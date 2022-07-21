@@ -1,0 +1,44 @@
+---
+- name: check required packages installed
+  become: true
+  ansible.builtin.yum:
+    name:
+      - yum-utils
+      - firewalld
+      - python-firewall
+    state: present
+
+- name: firewalld is started and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: install squid
+  become: true
+  ansible.builtin.yum:
+    name: squid
+    state: present
+
+- name: squid is started and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: squid
+    state: started
+    enabled: yes
+
+- name: squid port {{ squid_port }} is opened
+  become: true
+  ansible.posix.firewalld:
+    port: "{{ squid_port }}/tcp"
+    state: enabled
+    immediate: yes
+    permanent: yes
+
+- name: update squid config
+  become: true
+  ansible.builtin.template:
+    src: squid.conf.j2
+    dest: /etc/squid/squid.conf
+  notify: restart squid

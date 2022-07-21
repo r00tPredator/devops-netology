@@ -1,0 +1,75 @@
+---
+- name: add prometheus group
+  become: true
+  ansible.builtin.group:
+    name: prometheus
+    system: yes
+    state: present
+
+- name: create prometheus user
+  become: true
+  ansible.builtin.user:
+    name: prometheus
+    system: yes
+    group: prometheus
+    state: present
+    shell: /sbin/nologin
+    create_home: no
+
+- name: Create config directory for alertmanager
+  become: true
+  ansible.builtin.file:
+    path: /etc/alertmanager
+    state: directory
+
+- name: Create data directory for alertmanager
+  become: true
+  ansible.builtin.file:
+    path: /var/lib/prometheus/alertmanager
+    owner: prometheus
+    group: prometheus
+    state: directory
+
+- name: Download alertmanager
+  environment:
+    http_proxy: "{{ alertmanager_proxy }}"
+    https_proxy: "{{ alertmanager_proxy }}"
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
+    dest: /tmp/alertmanager.tar.gz
+    use_proxy: yes
+
+- name: Extract the file
+  ansible.builtin.unarchive:
+    src: /tmp/alertmanager.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: copy binary to /usr/local/bin/ 
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager"
+    dest: /usr/local/bin/ 
+    remote_src: yes
+    mode: '0751'
+
+- name: copy config
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/alertmanager-{{ alertmanager_version }}.linux-amd64/alertmanager.yml"
+    dest: /etc/alertmanager/alertmanager.yml
+    remote_src: yes
+
+- name: copy unit service
+  become: true
+  ansible.builtin.template:
+    src: alertmanager.service.j2
+    dest: /etc/systemd/system/alertmanager.service
+
+- name: start and enable alertmanager
+  become: true
+  ansible.builtin.systemd:
+    name: alertmanager
+    state: started
+    enabled: yes
+    daemon_reload: yes

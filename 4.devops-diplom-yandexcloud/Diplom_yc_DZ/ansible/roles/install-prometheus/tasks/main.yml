@@ -1,0 +1,99 @@
+---
+- name: add prometheus group
+  become: true
+  ansible.builtin.group:
+    name: prometheus
+    system: yes
+    state: present
+
+- name: create prometheus user
+  become: true
+  ansible.builtin.user:
+    name: prometheus
+    system: yes
+    group: prometheus
+    state: present
+    shell: /sbin/nologin
+    create_home: no
+
+- name: Create config directory for Prometheus
+  become: true
+  ansible.builtin.file:
+    path: /etc/prometheus
+    state: directory
+
+- name: Create data directory for Prometheus
+  become: true
+  ansible.builtin.file:
+    path: /var/lib/prometheus
+    owner: prometheus
+    group: prometheus
+    state: directory
+
+- name: Create subdirectories
+  become: true
+  ansible.builtin.file:
+    path: "/var/lib/prometheus/{{ item }}"
+    owner: prometheus
+    group: prometheus
+    state: directory
+  loop:
+    - rules.d 
+    - files_sd
+
+- name: Download Prometheus Server
+  environment:
+    https_proxy: "{{ prometheus_proxy }}"
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    dest: /tmp/prometheus.tar.gz
+    use_proxy: yes
+
+- name: Extract the file
+  ansible.builtin.unarchive:
+    src: /tmp/prometheus.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: copy binary to /usr/local/bin/ 
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+    dest: /usr/local/bin/ 
+    remote_src: yes
+    mode: '0751'
+  loop:
+    - prometheus 
+    - promtool 
+
+- name: copy config
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus.yml"
+    dest: /etc/prometheus/prometheus.yml
+    remote_src: yes
+
+- name: copy 
+  become: true
+  ansible.builtin.copy:
+    directory_mode: yes
+    src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}/" 
+    dest: /etc/prometheus/
+    remote_src: yes
+  loop:
+    - consoles 
+    - console_libraries
+
+- name: copy unit service
+  become: true
+  ansible.builtin.template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+
+- name: start and enable prometheus
+  become: true
+  ansible.builtin.systemd:
+    name: prometheus
+    state: started
+    enabled: yes
+    daemon_reload: yes

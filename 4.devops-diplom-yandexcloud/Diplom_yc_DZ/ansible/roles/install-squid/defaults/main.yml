@@ -1,0 +1,4 @@
+---
+squid_port: 3128
+squid_ip: ''
+squid_allowed_list: []

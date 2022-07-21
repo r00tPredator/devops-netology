@@ -1,0 +1,116 @@
+---
+- name: install remi repo
+  become: true
+  ansible.builtin.yum:
+    name: http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+    state: present
+    disable_gpg_check: yes
+
+- name: install php7.2
+  become: true
+  ansible.builtin.yum:
+    name:
+      - php-mysqlnd 
+      - php-dom 
+      - php-simplexml 
+      - php-xml 
+      - php-xmlreader 
+      - php-curl 
+      - php-exif 
+      - php-ftp 
+      - php-gd 
+      - php-iconv
+      - php-json 
+      - php-mbstring 
+      - php-posix 
+      - php-sockets 
+      - php-tokenizer
+      - php-cli 
+      - php-fpm 
+      - php-mysql
+      - php-opcache 
+    state: present
+    disable_gpg_check: yes
+    enablerepo: remi-php72
+
+- name: update /etc/php-fpm.d/www.conf
+  become: true
+  ansible.builtin.lineinfile:
+    line: "{{ item.line }} = {{ item.value }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+    path: /etc/php-fpm.d/www.conf
+  loop:
+    - {regexp: '^user\s*=', line: "user", value: "nginx"}
+    - {regexp: '^group\s*=', line: "group", value: "nginx"}
+    - {regexp: '^listen\s*=', line: "listen", value: "/run/php-fpm/www.sock"}
+    - {regexp: '^listen.owner\s*', line: "listen.owner", value: "nginx"}
+    - {regexp: '^listen.group\s*=', line: "listen.group", value: "nginx"}
+
+- name: update permissions in /var/lib/php
+  become: true
+  ansible.builtin.file:
+    path: /var/lib/php
+    recurse: yes
+    owner: nginx
+    group: nginx
+    state: directory
+
+- name: php-fpm started and enabled
+  become: true
+  ansible.builtin.systemd:
+    name: php-fpm
+    state: started
+    enabled: yes
+
+- name: get wordpress
+  environment:
+    https_proxy: "{{ wordpress_proxy }}"
+  ansible.builtin.get_url:
+    url: https://wordpress.org/latest.tar.gz
+    use_proxy: yes
+    dest: /tmp/wordpress.tar.gz
+
+- name: check /var/www exists
+  become: true
+  ansible.builtin.file:
+    path: /var/www
+    state: directory
+    owner: nginx
+    group: nginx
+
+- name: Unarchive wordpress
+  become: true
+  ansible.builtin.unarchive:
+    src: /tmp/wordpress.tar.gz
+    dest: /var/www/
+    remote_src: yes
+    owner: nginx
+    group: nginx
+    creates: /var/www/wordpress
+
+- name: install wp-cli
+  become: true
+  environment:
+    https_proxy: "{{ wordpress_proxy }}"
+  ansible.builtin.get_url:
+    url: "https://github.com/wp-cli/wp-cli/releases/download/v{{ wordpress_wp_cli_version }}/wp-cli-{{ wordpress_wp_cli_version }}.phar"
+    use_proxy: yes
+    dest: /usr/local/bin/wp
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: remove default.conf file
+  become: true
+  ansible.builtin.file:
+    path: /etc/nginx/conf.d/default.conf
+    state: absent
+  notify: restart nginx
+
+- name: copy nginx config
+  become: true
+  ansible.builtin.copy:
+    src: wordpress.conf
+    dest: /etc/nginx/conf.d/wordpress.conf
+  notify: restart nginx

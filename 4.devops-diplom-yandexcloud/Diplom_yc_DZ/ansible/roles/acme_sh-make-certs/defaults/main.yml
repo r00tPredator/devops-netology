@@ -1,0 +1,10 @@
+---
+acme_domain: ''
+# acme_domain: example.com
+
+acme_resources: []
+#  acme_resources
+#    - name: www
+#    - name: grafana
+
+acme_server: "letsencrypttest"

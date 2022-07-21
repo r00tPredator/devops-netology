@@ -1,0 +1,61 @@
+---
+- name: download node_exporter
+  environment:
+    https_proxy: "{{ node_exporter_proxy }}"
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: /tmp/node_exporter.tar.gz
+    use_proxy: yes
+ 
+- name: Extract the file
+  ansible.builtin.unarchive:
+    src: /tmp/node_exporter.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: copy binary to /usr/local/bin/ 
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+    dest: /usr/local/bin/ 
+    remote_src: yes
+    mode: '0751'
+
+- name: copy unit service
+  become: true
+  ansible.builtin.template:
+    src: node-exporter.service.j2
+    dest: /etc/systemd/system/node-exporter.service
+
+- name: start and enable node_exporter
+  become: true
+  ansible.builtin.systemd:
+    name: node-exporter
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- block:
+  - name: check required packages installed
+    become: true
+    ansible.builtin.yum:
+      name:
+        - firewalld
+        - python-firewall
+      state: present
+
+  - name: firewalld is started and enabled
+    become: true
+    ansible.builtin.systemd:
+      name: firewalld
+      state: started
+      enabled: yes
+
+  - name: open port 9100/tcp
+    become: true
+    ansible.posix.firewalld:
+      port: '9100/tcp'
+      state: enabled
+      immediate: yes
+      permanent: yes
+  when: node_exporter_open_port | bool

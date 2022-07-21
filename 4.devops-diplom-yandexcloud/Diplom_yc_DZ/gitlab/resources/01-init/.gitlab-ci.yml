@@ -1,0 +1,10 @@
+stages:
+  - deploy
+
+update_wordpress:
+  stage: deploy
+  script:
+    - scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null wp_update.sh centos@app:~/wp_update.sh
+    - ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null centos@app /bin/sh /home/centos/wp_update.sh
+  only:
+    - tags

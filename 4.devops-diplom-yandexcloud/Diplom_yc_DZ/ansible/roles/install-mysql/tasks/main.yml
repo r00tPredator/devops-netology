@@ -1,0 +1,126 @@
+---
+- name: install MySQL repo package
+  become: True
+  ansible.builtin.yum:
+    name: "{{ mysql_repo_url }}"
+    state: present
+    disable_gpg_check: yes
+
+- name: install MySQL server
+  become: True
+  ansible.builtin.yum:
+    name: 
+      - mysql-community-server
+      - python2-PyMySQL
+      - python36-PyMySQL
+      - python2-cryptography
+      - python36-cryptography
+    state: present
+    disable_gpg_check: yes
+
+- name: set server-id in my.cnf
+  become: True
+  community.general.ini_file:
+    path: /etc/my.cnf
+    section: mysqld
+    option: server-id
+    value: "{{ mysql_server_id }}"
+
+- name: enable MySQL server
+  become: True
+  ansible.builtin.systemd:
+    name: mysqld
+    state: started
+    enabled: yes
+
+- name: check if mysqp tmp pwd already updated
+  become: True
+  ansible.builtin.stat:
+    path: /opt/ansible_mysql_tmp_pwd_ipdated
+  register: mysql_tmp_pwd_status
+
+- block:
+  - name: get temporary password
+    become: True
+    ansible.builtin.shell:
+      cmd: grep 'temporary password' /var/log/mysqld.log | grep -oE '[^ ]+$'
+    register: mysql_tmp_pwd
+
+  - name: Set MySQL root Password
+    become: True
+    ansible.builtin.shell:
+      cmd: "mysqladmin -u root -p'{{ mysql_tmp_pwd.stdout }}' password {{ mysql_root_pass }}"
+
+  - name: set tmp_pwd obtained flag
+    become: True
+    ansible.builtin.file:
+      path: /opt/ansible_mysql_tmp_pwd_ipdated
+      state: touch
+        
+  when: not mysql_tmp_pwd_status.stat.exists
+
+- name: Removes all anonymous user accounts
+  become: True
+  community.mysql.mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+    login_host: 'localhost'
+    name: ''
+    host_all: yes
+    state: absent
+
+- name: Remove testdb
+  become: True
+  community.mysql.mysql_db:
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+    login_host: 'localhost'
+    name: testdb
+    state: absent
+
+- name: Create the replication user
+  become: True
+  community.mysql.mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+    login_host: 'localhost'
+    name: "{{ mysql_replication_user }}"
+    host: "%"
+    password: "{{ mysql_replication_pass }}"
+    priv: "*.*:REPLICATION SLAVE"
+    state: present
+  when: inventory_hostname in groups['master']
+
+- name: Get the current master servers replication status
+  become: True
+  community.mysql.mysql_replication:
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+    login_host: 'localhost'
+    mode: getprimary
+  delegate_to: "{{ mysql_master_ip }}"
+  register: repl_stat
+  when: inventory_hostname in groups['slave']
+
+- name: Change the master in slave to start the replication
+  become: True
+  community.mysql.mysql_replication:
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+    login_host: 'localhost'
+    mode: changeprimary
+    master_host: "{{ mysql_master_ip }}"
+    master_log_file: "{{ repl_stat.File }}"
+    master_log_pos: "{{ repl_stat.Position }}"
+    master_user: "{{ mysql_replication_user }}"
+    master_password: "{{ mysql_replication_pass }}"
+  when: inventory_hostname in groups['slave']
+
+- name: start slave
+  become: True
+  community.mysql.mysql_replication:
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+    login_host: 'localhost'
+    mode:  startreplica
+  when: inventory_hostname in groups['slave']

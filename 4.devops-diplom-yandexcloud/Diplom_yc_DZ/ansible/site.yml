@@ -1,0 +1,237 @@
+---
+- name: install squid on bastion hosts
+  hosts: nginx
+  remote_user: centos
+  roles:
+    - install-squid
+  tags:
+    - squid
+    - preconfigure
+
+- name: configure yum proxy on gatewayed hosts
+  hosts: gatewayed
+  remote_user: centos
+  roles:
+    - configure-yum-proxy
+  tags:
+    - proxy
+    - preconfigure
+
+- name: Preconfigure hosts
+  hosts: all
+  remote_user: centos
+  roles:
+    - preconfigure
+    - install-node-exporter
+  tags:
+    - preconfigure
+
+- name: Install nginx
+  hosts: nginx
+  remote_user: centos
+  roles:
+    - install-nginx
+  post_tasks:
+    - name: configure nginx http
+      become: True
+      ansible.builtin.template:
+        src: nginx/mynginx-http.conf.j2
+        dest: /etc/nginx/conf.d/mynginx.conf
+      notify: restart nginx
+  tags:
+    - nginx
+
+- name: get certs and configure nginx
+  hosts: nginx
+  remote_user: centos
+  handlers:
+    - name: reload nginx
+      become: True
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+  roles:
+    - acme_sh-make-certs
+  post_tasks:
+    - name: configure nginx tls
+      become: True
+      ansible.builtin.template:
+        src: nginx/mynginx.conf.j2
+        dest: /etc/nginx/conf.d/mynginx.conf
+      notify: reload nginx
+    - name: reconfigure nginx http
+      become: True
+      ansible.builtin.template:
+        src: nginx/mynginx-301.conf.j2
+        dest: /etc/nginx/conf.d/mynginx-http.conf
+      notify: reload nginx
+  tags:
+    - nginx
+    - certs
+
+- name: Install MySQL
+  hosts: database
+  remote_user: centos
+  roles:
+    - install-mysql
+  post_tasks:
+    - name: create wordpress database
+      become: True
+      community.mysql.mysql_db:
+        login_user: root
+        login_password: "{{ mysql_root_pass }}"
+        login_host: "localhost"
+        name: wordpress
+        state: present
+        collation: utf8mb4_general_ci
+      when: inventory_hostname in groups['master']
+    - name: Create wordpress user
+      become: True
+      community.mysql.mysql_user:
+        login_user: root
+        login_password: "{{ mysql_root_pass }}"
+        login_host: 'localhost'
+        name: "wordpress"
+        host: "%"
+        password: "wordpress"
+        priv: "wordpress.*:ALL"
+        state: present
+      when: inventory_hostname in groups['master']
+  tags:
+    - mysql
+
+- name: install wordpress
+  hosts: wordpress
+  remote_user: centos
+  roles:
+    - install-nginx
+    - install-wordpress
+  post_tasks:
+    - name: copy wp-config.php
+      become: True
+      ansible.builtin.template:
+        src: wordpress/wp-config.php.j2
+        dest: /var/www/wordpress/wp-config.php
+        owner: nginx
+        group: nginx
+      notify: restart nginx
+    
+    - name: install site
+      ansible.builtin.shell:
+        cmd: >-
+          /usr/local/bin/wp core install 
+          --url={{ wp_uri }} 
+          --title={{ wp_site_title }} 
+          --admin_user={{ wp_site_admin_name }} 
+          --admin_password={{ wp_site_admin_password }} 
+          --admin_email={{ wp_site_admin_email }}
+        chdir: /var/www/wordpress
+        creates: /opt/site-installed
+      register: wp_site_install
+
+    - name: put site-installed flag
+      become: True
+      ansible.builtin.file:
+        path: /opt/site-installed
+        state: touch
+      when: wp_site_install.rc == 0
+  tags:
+    - wordpress
+
+- name: install prometheus
+  hosts: monitoring
+  remote_user: centos
+  roles:
+    - install-prometheus
+  post_tasks:
+    - name: reconfigure prometheus
+      become: True
+      ansible.builtin.template:
+        src: prometheus/prometheus.yml.j2
+        dest: /etc/prometheus/prometheus.yml
+      notify: restart prometheus
+    
+    - name: copy alert rules
+      become: True
+      ansible.builtin.copy:
+        src: "alertmanager/{{ item }}"
+        dest: "/var/lib/prometheus/rules.d/{{ item }}"
+        owner: prometheus
+        group: prometheus
+      loop:
+        - node_exporter-rules.yml
+        - prometheus-rules.yml
+      notify: restart prometheus
+  tags:
+    - prometheus
+
+- name: install alertmanager
+  hosts: monitoring
+  remote_user: centos
+  roles:
+    - install-alertmanager
+  tags:
+    - alertmanager
+
+- name: install grafana
+  hosts: monitoring
+  remote_user: centos
+  roles:
+    - install-grafana
+  post_tasks:
+    - name: create dashboards directory
+      become: True
+      ansible.builtin.file:
+        path: /var/lib/grafana/dashboards
+        state: directory
+        owner: grafana
+        group: grafana
+
+    - name: copy dashboard
+      become: True
+      ansible.builtin.copy:
+        src: grafana/ne-dashboard.json
+        dest: /var/lib/grafana/dashboards/ne-dashboard.json
+        owner: grafana
+        group: grafana
+      notify: restart grafana
+
+    - name: copy dashboard provisioning
+      become: True
+      ansible.builtin.copy:
+        src: grafana/node_exporter-db.yaml
+        dest: /etc/grafana/provisioning/dashboards
+      notify: restart grafana
+
+    - name: copy dataset
+      become: True
+      ansible.builtin.copy:
+        src: grafana/datasources.yaml
+        dest: /etc/grafana/provisioning/datasources
+      notify: restart grafana
+  tags:
+    - grafana
+
+- name: install gitlab
+  hosts: gitlab
+  remote_user: centos
+  roles:
+    - install-gitlab
+  tags:
+    - gitlab
+
+- name: install gitlab-runner
+  hosts: runner
+  remote_user: centos
+  roles:
+    - install-gitlab-runner
+  tags:
+    - runner
+
+- name: populate ssh-keys in deployment environment
+  hosts: deployment
+  remote_user: centos
+  roles:
+    - populate-ssh-keys
+  tags:
+    - copy_ssh

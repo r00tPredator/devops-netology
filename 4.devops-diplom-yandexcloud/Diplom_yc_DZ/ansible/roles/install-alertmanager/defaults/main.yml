@@ -1,0 +1,4 @@
+---
+alertmanager_version: "0.24.0" 
+alertmanager_proxy: 
+alertmanager_cpu: "2"

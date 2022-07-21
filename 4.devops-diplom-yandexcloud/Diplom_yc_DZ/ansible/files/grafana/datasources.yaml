@@ -1,0 +1,24 @@
+# # config file version
+apiVersion: 1
+
+# # list of datasources that should be deleted from the database
+deleteDatasources:
+   - name: Prometheus
+   - name: Alertmanager
+ 
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://localhost:9090
+    jsonData:
+      manageAlerts: true
+      alertmanagerUid: alertmanager
+
+  - name: Alertmanager
+    type: alertmanager
+    uid: alertmanager
+    access: proxy
+    url: http://localhost:9093
+    jsonData:
+      implementation: prometheus

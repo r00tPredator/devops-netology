@@ -1,0 +1,5 @@
+---
+gitlab_runner_coordinator_url: 'https://gitlab.com'
+gitlab_runner_tags: []
+gitlab_runner_executor: "shell"
+gitlab_runner_registration_token:

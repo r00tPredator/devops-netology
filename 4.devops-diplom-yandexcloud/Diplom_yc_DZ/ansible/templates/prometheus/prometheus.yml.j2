@@ -1,0 +1,53 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  - /var/lib/prometheus/rules.d/*.yml
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: ["127.0.0.1:9093"]
+  alert_relabel_configs:
+  - action: labeldrop
+    regex: replica
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus"
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'. 
+    static_configs:
+      - targets:
+          - "localhost:9090"
+  - job_name: "alertmanager"
+    static_configs:
+      - targets:
+          - "localhost:9093"
+  - job_name: "node_exporters"
+    scrape_interval: 15s
+    static_configs:
+    - targets:
+      - localhost:9100
+      - gitlab:9100
+      - nginx:9100
+      - app:9100
+      - db01:9100
+      - db02:9100
+      - runner:9100
+  - job_name: "gitlab-federation"
+    scrape_interval: 15s
+    scrape_timeout: 15s
+    scheme: http
+    honor_labels: true
+    metrics_path: '/federate'
+    params:
+      'match[]':
+        - '{__name__=~".+"}'

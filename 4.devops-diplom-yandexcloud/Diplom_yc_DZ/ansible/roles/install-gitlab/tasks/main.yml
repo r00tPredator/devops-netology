@@ -1,0 +1,68 @@
+---
+- name: check dependencies
+  become: True
+  ansible.builtin.yum:
+    name:
+      - policycoreutils-python 
+      - perl
+      - curl
+      - postfix
+      - openssl
+      - tzdata
+
+- name: add gitlab-ce repo
+  become: True
+  ansible.builtin.copy:
+    src: repo/el/7.repo
+    dest: /etc/yum.repos.d/gitlab-ce.repo
+
+- name: add endpoint repo
+  become: True
+  ansible.builtin.yum:
+    name: https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+    state: present
+    disable_gpg_check: yes
+
+- name: install git
+  become: True
+  ansible.builtin.yum:
+    name: git
+    state: present
+    disable_gpg_check: yes
+
+- name: Check if GitLab is already installed.
+  ansible.builtin.stat: 
+    path: /usr/bin/gitlab-ctl
+  register: gitlab_file
+
+- name: install gitlab-ce
+  become: True
+  ansible.builtin.yum:
+    name: gitlab-ce
+    state: present
+    disable_gpg_check: yes
+  async: 900
+  poll: 5
+  when: not gitlab_file.stat.exists
+
+- name: copy gitlab config
+  become: True
+  ansible.builtin.template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+
+# Start and configure GitLab. Sometimes the first run fails, but after that,
+# restarts fix problems, so ignore failures on this run.
+- name: Reconfigure GitLab (first run).
+  become: True
+  ansible.builtin.shell: 
+    cmd: gitlab-ctl reconfigure
+    creates: /var/opt/gitlab/bootstrapped
+  failed_when: False
+
+- name: restart gitlab
+  become: True
+  ansible.builtin.shell: 
+    cmd: gitlab-ctl reconfigure
+  register: gitlab_restart
+  failed_when: gitlab_restart.rc != 0
