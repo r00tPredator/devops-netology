@@ -89,7 +89,9 @@ ansible-playbook -i ../ansible/inventory/stage.yml -t preconfigure ../ansible/si
 
 ansible-playbook -i ../ansible/inventory/stage.yml -t nginx ../ansible/site.yml"
 
-ansible-playbook -i ../ansible/inventory/stage.yml -t mysql ../ansible/site.yml" 
+ansible-playbook -i ../ansible/inventory/stage.yml -t mysql ../ansible/site.yml"
+
+![](img/mysql_01.png)
 
 ansible-playbook -i ../ansible/inventory/stage.yml -t wordpress ../ansible/site.yml"
 
@@ -170,9 +172,6 @@ git --git-dir=wp-project/.git --work-tree=wp-project push --tags
 <br>
 
 ![](img/cicd_03.png)
-
-## MySQL
-![](img/mysql_01.png)
 
 ## Grafana
 ![](img/grafana_01.png)

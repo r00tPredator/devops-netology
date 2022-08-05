@@ -3,6 +3,7 @@
 - [Курсовая работа по итогам первого модуля](CourseWork)
 - [Домашнее задания второго модуля](2.Virt-homeworks)
 - [Домашнее задания третьего модуля](3.Mnt-homeworks)
+- [Дипломный практикум в YandexCloud](4.devops-diplom-yandexcloud/Diplom_yc_DZ)
 
 ## DevOps и системное администрирование (первый модуль) 
 
@@ -136,3 +137,6 @@
 - ELK
 - Sentry
 - Инцидент-менеджмент
+
+### Дипломная работа
+- [Дипломный практикум в YandexCloud](4.devops-diplom-yandexcloud)
